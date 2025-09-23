@@ -2028,7 +2028,7 @@ const AutoBattleRPG = () => {
               'relative'
             }`}
             style={{
-              backgroundImage: 'url("src/assets/tutorialui.png")',
+              backgroundImage: 'url("/tutorialui.png")',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
