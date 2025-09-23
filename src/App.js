@@ -121,29 +121,19 @@ const AutoBattleRPG = () => {
     }
   ];
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      setGameState(prev => ({
-        ...prev,
-        keys: { ...prev.keys, [e.key.toLowerCase()]: true }
-      }));
-    };
-
-    const handleKeyUp = (e) => {
-      setGameState(prev => ({
-        ...prev,
-        keys: { ...prev.keys, [e.key.toLowerCase()]: false }
-      }));
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
+  const addEffect = useCallback((effect) => {
+    setGameState(prev => ({
+      ...prev,
+      effects: [...prev.effects, { ...effect, id: Date.now() + Math.random(), time: prev.gameTime }]
+    }));
   }, []);
+
+  const checkCollision = (char, enemy) => {
+    const dx = char.x - enemy.x;
+    const dy = char.y - enemy.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < 35;
+  };
 
   const spawnWave = useCallback((waveNumber) => {
     const enemyCount = Math.min(3 + waveNumber * 2, 15);
@@ -183,20 +173,6 @@ const AutoBattleRPG = () => {
       waveStartTime: prev.gameTime
     }));
   }, [gameState.character.level]);
-
-  const addEffect = useCallback((effect) => {
-    setGameState(prev => ({
-      ...prev,
-      effects: [...prev.effects, { ...effect, id: Date.now() + Math.random(), time: prev.gameTime }]
-    }));
-  }, []);
-
-  const checkCollision = (char, enemy) => {
-    const dx = char.x - enemy.x;
-    const dy = char.y - enemy.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < 35;
-  };
 
   const attackEnemies = useCallback(() => {
     setGameState(prev => {
@@ -403,6 +379,30 @@ const AutoBattleRPG = () => {
   }, [addEffect]);
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      setGameState(prev => ({
+        ...prev,
+        keys: { ...prev.keys, [e.key.toLowerCase()]: true }
+      }));
+    };
+
+    const handleKeyUp = (e) => {
+      setGameState(prev => ({
+        ...prev,
+        keys: { ...prev.keys, [e.key.toLowerCase()]: false }
+      }));
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isPlaying || gameOver) return;
 
     const gameLoop = setInterval(() => {
@@ -540,7 +540,6 @@ const AutoBattleRPG = () => {
           }
         }
         
-        // Fallback: if somehow we're stuck with no enemies and no wave progress, force next wave
         if (newState.enemies.length === 0 && newState.waveProgress === 'active') {
           newState.waveProgress = 'cleared';
           newState.waveTransitionTime = newState.gameTime;
@@ -583,6 +582,18 @@ const AutoBattleRPG = () => {
       newState.levelUpOptions = [];
       return newState;
     });
+  };
+
+  const forceNextWave = () => {
+    setGameState(prev => ({
+      ...prev,
+      currentWave: prev.currentWave + 1,
+      waveProgress: 'preparing',
+      waveTransitionTime: prev.gameTime
+    }));
+    setTimeout(() => {
+      spawnWave(gameState.currentWave + 1);
+    }, 100);
   };
 
   const toggleGame = () => {
@@ -806,6 +817,16 @@ const AutoBattleRPG = () => {
           >
             {gameOver ? 'Restart' : isPlaying ? 'Pause' : 'Start'}
           </button>
+          
+          {isPlaying && gameState.enemies.length === 0 && gameState.waveProgress !== 'transition' && (
+            <button 
+              onClick={forceNextWave}
+              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-bold text-sm transition-all"
+            >
+              Force Next Wave
+            </button>
+          )}
+          
           <button 
             onClick={resetGame}
             className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold transition-all"
