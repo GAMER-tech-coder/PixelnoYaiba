@@ -47,7 +47,6 @@ const AutoBattleRPG = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
 
-  // Tutorial steps definition
   const tutorialSteps = [
     {
       title: "Welcome to PixelnoYaiba!",
@@ -87,7 +86,7 @@ const AutoBattleRPG = () => {
     },
     {
       title: "Boss Battles",
-      content: "Every 5th wave brings a powerful Moon-ranked boss! These enemies have special abilities, more health, and require strategic positioning to defeat.",
+      content: "Every 3rd wave brings a powerful Moon-ranked boss! These enemies have special abilities, more health, and require strategic positioning to defeat.",
       highlight: "wave",
       position: "top-center"
     },
@@ -112,13 +111,52 @@ const AutoBattleRPG = () => {
   ];
 
   const enemyTypes = [
-    { name: 'Goblin', health: 25, xp: 10, color: 'bg-green-500', speed: 1.5, damage: 10 },
-    { name: 'Orc', health: 50, xp: 25, color: 'bg-red-500', speed: 1.2, damage: 15 },
-    { name: 'Troll', health: 100, xp: 50, color: 'bg-gray-600', speed: 0.8, damage: 25 },
-    { name: 'Dragon', health: 200, xp: 100, color: 'bg-purple-600', speed: 0.6, damage: 35 }
+    { name: 'Kappa Demon', health: 25, xp: 10, color: 'bg-green-500', speed: 1.5, damage: 10 },
+    { name: 'Oni Warrior', health: 50, xp: 25, color: 'bg-red-500', speed: 1.2, damage: 15 },
+    { name: 'Tengu Beast', health: 100, xp: 50, color: 'bg-gray-600', speed: 0.8, damage: 25 },
+    { name: 'Ryujin Serpent', health: 200, xp: 100, color: 'bg-purple-600', speed: 0.6, damage: 35 }
   ];
 
   const bossTypes = [
+    {
+      name: 'Lower Moon Six: Kyouki',
+      health: 600,
+      xp: 150,
+      color: 'bg-red-600',
+      speed: 0.7,
+      damage: 25,
+      size: 20,
+      abilities: ['bloodFrenzy'],
+      attackCooldown: 3500,
+      projectileSpeed: 3.5,
+      specialCooldown: 6000
+    },
+    {
+      name: 'Lower Moon Five: Dokuja',
+      health: 700,
+      xp: 175,
+      color: 'bg-green-700',
+      speed: 0.9,
+      damage: 28,
+      size: 22,
+      abilities: ['poisonCloud'],
+      attackCooldown: 3200,
+      projectileSpeed: 4,
+      specialCooldown: 5500
+    },
+    {
+      name: 'Lower Moon Four: Hikage',
+      health: 750,
+      xp: 180,
+      color: 'bg-indigo-700',
+      speed: 1.1,
+      damage: 30,
+      size: 22,
+      abilities: ['shadowStep'],
+      attackCooldown: 3000,
+      projectileSpeed: 4.2,
+      specialCooldown: 5000
+    },
     {
       name: 'Lower Moon Three: Akemaru',
       health: 800,
@@ -172,6 +210,32 @@ const AutoBattleRPG = () => {
       specialCooldown: 7000
     },
     {
+      name: 'Upper Moon Five: Shinigami',
+      health: 3000,
+      xp: 700,
+      color: 'bg-purple-800',
+      speed: 1.0,
+      damage: 60,
+      size: 32,
+      abilities: ['deathScythe', 'soulReap'],
+      attackCooldown: 1900,
+      projectileSpeed: 6.5,
+      specialCooldown: 6500
+    },
+    {
+      name: 'Upper Moon Four: Jigokuou',
+      health: 3200,
+      xp: 750,
+      color: 'bg-orange-800',
+      speed: 0.8,
+      damage: 65,
+      size: 34,
+      abilities: ['hellfire', 'infernoRage'],
+      attackCooldown: 2200,
+      projectileSpeed: 6,
+      specialCooldown: 6000
+    },
+    {
       name: 'Upper Moon Three: Raijinmaru',
       health: 3500,
       xp: 800,
@@ -183,6 +247,19 @@ const AutoBattleRPG = () => {
       attackCooldown: 1800,
       projectileSpeed: 7,
       specialCooldown: 5500
+    },
+    {
+      name: 'Upper Moon Two: Mugenki',
+      health: 4200,
+      xp: 1000,
+      color: 'bg-pink-800',
+      speed: 1.3,
+      damage: 75,
+      size: 34,
+      abilities: ['infiniteSlash', 'dimensionRift'],
+      attackCooldown: 1600,
+      projectileSpeed: 8,
+      specialCooldown: 5000
     },
     {
       name: 'Upper Moon One: Yaminokage',
@@ -284,7 +361,6 @@ const AutoBattleRPG = () => {
     return distance < 35;
   };
 
-  // Boss AI and special abilities
   const executeBossAbilities = useCallback(() => {
     setGameState(prev => {
       let newState = { ...prev };
@@ -319,11 +395,102 @@ const AutoBattleRPG = () => {
         if (now - (boss.lastSpecialAttack || 0) > boss.specialCooldown) {
           boss.lastSpecialAttack = now;
           
-          // Execute special abilities based on boss type
+          if (boss.abilities.includes('bloodFrenzy')) {
+            boss.hasBloodFrenzy = true;
+            boss.bloodFrenzyUntil = now + 4000;
+            boss.speed *= 1.5;
+            boss.attackCooldown *= 0.7;
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'BLOOD FRENZY!',
+              color: 'text-red-600'
+            });
+          }
+          
+          if (boss.abilities.includes('poisonCloud')) {
+            for (let i = 0; i < 8; i++) {
+              const angle = (i / 8) * Math.PI * 2;
+              const distance = 60 + Math.random() * 40;
+              const cloudX = boss.x + Math.cos(angle) * distance;
+              const cloudY = boss.y + Math.sin(angle) * distance;
+              
+              setTimeout(() => {
+                addEffect({
+                  type: 'poison',
+                  x: cloudX,
+                  y: cloudY,
+                  text: '☠️',
+                  color: 'text-green-500'
+                });
+                
+                const dx = newState.character.x - cloudX;
+                const dy = newState.character.y - cloudY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 40) {
+                  newState.character.health -= boss.damage * 0.5;
+                  addEffect({
+                    type: 'playerDamage',
+                    x: newState.character.x,
+                    y: newState.character.y,
+                    text: `POISONED -${Math.floor(boss.damage * 0.5)}`,
+                    color: 'text-green-600'
+                  });
+                }
+              }, i * 200);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'POISON CLOUD!',
+              color: 'text-green-400'
+            });
+          }
+          
+          if (boss.abilities.includes('shadowStep')) {
+            for (let i = 0; i < 3; i++) {
+              setTimeout(() => {
+                boss.x = 200 + Math.random() * 400;
+                boss.y = 150 + Math.random() * 300;
+                
+                const dx = newState.character.x - boss.x;
+                const dy = newState.character.y - boss.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 0) {
+                  const projectile = {
+                    id: Date.now() + Math.random() + i,
+                    x: boss.x,
+                    y: boss.y,
+                    vx: (dx / distance) * boss.projectileSpeed * 1.2,
+                    vy: (dy / distance) * boss.projectileSpeed * 1.2,
+                    damage: boss.damage * 0.8,
+                    lifetime: 0,
+                    type: 'shadow'
+                  };
+                  
+                  newState.bossProjectiles.push(projectile);
+                }
+              }, i * 800);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'SHADOW STEP!',
+              color: 'text-indigo-400'
+            });
+          }
+          
           if (boss.abilities.includes('crimsonBlade')) {
-            // Akemaru - Crimson Blade: Rapid fire projectiles in a spread
             for (let i = 0; i < 5; i++) {
-              const angle = (i - 2) * 0.3; // Spread pattern
+              const angle = (i - 2) * 0.3;
               const dx = newState.character.x - boss.x;
               const dy = newState.character.y - boss.y;
               const distance = Math.sqrt(dx * dx + dy * dy);
@@ -360,11 +527,9 @@ const AutoBattleRPG = () => {
           }
           
           if (boss.abilities.includes('shadowClone')) {
-            // Yamikaze - Shadow Clone: Teleport and confuse
             boss.isInvisible = true;
             boss.invisibleUntil = now + 2000;
             
-            // Teleport to random position
             boss.x = 200 + Math.random() * 400;
             boss.y = 150 + Math.random() * 300;
             
@@ -378,7 +543,6 @@ const AutoBattleRPG = () => {
           }
           
           if (boss.abilities.includes('ironSkin')) {
-            // Tetsugan - Iron Skin: Damage reduction
             boss.hasIronSkin = true;
             boss.ironSkinUntil = now + 4000;
             
@@ -392,7 +556,6 @@ const AutoBattleRPG = () => {
           }
           
           if (boss.abilities.includes('meteorFist')) {
-            // Tetsugan - Meteor Fist: Slow massive projectile
             const dx = newState.character.x - boss.x;
             const dy = newState.character.y - boss.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -423,7 +586,6 @@ const AutoBattleRPG = () => {
           }
           
           if (boss.abilities.includes('blizzardShadows')) {
-            // Kuroyuki - Blizzard Shadows: Multiple homing projectiles
             for (let i = 0; i < 8; i++) {
               const angle = (i / 8) * Math.PI * 2;
               const projectile = {
@@ -450,8 +612,65 @@ const AutoBattleRPG = () => {
             });
           }
           
+          if (boss.abilities.includes('deathScythe')) {
+            for (let i = 0; i < 7; i++) {
+              const baseAngle = Math.atan2(newState.character.y - boss.y, newState.character.x - boss.x);
+              const angle = baseAngle + (i - 3) * 0.2;
+              
+              const projectile = {
+                id: Date.now() + Math.random() + i,
+                x: boss.x,
+                y: boss.y,
+                vx: Math.cos(angle) * boss.projectileSpeed * 1.2,
+                vy: Math.sin(angle) * boss.projectileSpeed * 1.2,
+                damage: boss.damage * 1.3,
+                lifetime: 0,
+                type: 'scythe',
+                size: 12
+              };
+              
+              newState.bossProjectiles.push(projectile);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'DEATH SCYTHE!',
+              color: 'text-purple-400'
+            });
+          }
+          
+          if (boss.abilities.includes('hellfire')) {
+            for (let i = 0; i < 12; i++) {
+              const angle = (i / 12) * Math.PI * 2;
+              
+              setTimeout(() => {
+                const projectile = {
+                  id: Date.now() + Math.random() + i,
+                  x: boss.x + Math.cos(angle) * 80,
+                  y: boss.y + Math.sin(angle) * 80,
+                  vx: Math.cos(angle) * boss.projectileSpeed * 0.8,
+                  vy: Math.sin(angle) * boss.projectileSpeed * 0.8,
+                  damage: boss.damage * 0.9,
+                  lifetime: 0,
+                  type: 'hellfire'
+                };
+                
+                newState.bossProjectiles.push(projectile);
+              }, i * 150);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'HELLFIRE RING!',
+              color: 'text-orange-400'
+            });
+          }
+          
           if (boss.abilities.includes('thunderWrath')) {
-            // Raijinmaru - Thunder Wrath: Lightning storm
             for (let i = 0; i < 6; i++) {
               setTimeout(() => {
                 const randomX = 100 + Math.random() * 600;
@@ -465,7 +684,6 @@ const AutoBattleRPG = () => {
                   color: 'text-yellow-300'
                 });
                 
-                // Check if player is near lightning
                 const dx = newState.character.x - randomX;
                 const dy = newState.character.y - randomY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -492,8 +710,66 @@ const AutoBattleRPG = () => {
             });
           }
           
+          if (boss.abilities.includes('infiniteSlash')) {
+            for (let wave = 0; wave < 3; wave++) {
+              setTimeout(() => {
+                for (let i = 0; i < 8; i++) {
+                  const angle = Math.random() * Math.PI * 2;
+                  const speed = boss.projectileSpeed * (0.8 + Math.random() * 0.6);
+                  
+                  const projectile = {
+                    id: Date.now() + Math.random() + wave + i,
+                    x: boss.x,
+                    y: boss.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    damage: boss.damage * 0.7,
+                    lifetime: 0,
+                    type: 'slash'
+                  };
+                  
+                  newState.bossProjectiles.push(projectile);
+                }
+              }, wave * 400);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'INFINITE SLASH!',
+              color: 'text-pink-400'
+            });
+          }
+          
+          if (boss.abilities.includes('eternalNight')) {
+            boss.hasCursed = true;
+            boss.cursedUntil = now + 6000;
+            
+            if (!newState.character.cursedDamage) {
+              newState.character.cursedDamage = Math.floor(newState.character.damage * 0.6);
+              newState.character.originalDamage = newState.character.damage;
+              newState.character.damage = newState.character.cursedDamage;
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'ETERNAL NIGHT CURSE!',
+              color: 'text-purple-600'
+            });
+            
+            addEffect({
+              type: 'curse',
+              x: newState.character.x,
+              y: newState.character.y - 50,
+              text: 'CURSED! -40% DAMAGE',
+              color: 'text-purple-500'
+            });
+          }
+          
           if (boss.abilities.includes('thousandStrikes')) {
-            // Yaminokage - Thousand Strikes: Overwhelming projectile barrage
             for (let i = 0; i < 20; i++) {
               setTimeout(() => {
                 const angle = Math.random() * Math.PI * 2;
@@ -535,6 +811,32 @@ const AutoBattleRPG = () => {
           delete boss.ironSkinUntil;
         }
         
+        if (boss.bloodFrenzyUntil && now > boss.bloodFrenzyUntil) {
+          boss.hasBloodFrenzy = false;
+          boss.speed /= 1.5;
+          boss.attackCooldown /= 0.7;
+          delete boss.bloodFrenzyUntil;
+        }
+        
+        if (boss.cursedUntil && now > boss.cursedUntil) {
+          boss.hasCursed = false;
+          delete boss.cursedUntil;
+          
+          if (newState.character.cursedDamage) {
+            newState.character.damage = newState.character.originalDamage;
+            delete newState.character.cursedDamage;
+            delete newState.character.originalDamage;
+            
+            addEffect({
+              type: 'curseRemoved',
+              x: newState.character.x,
+              y: newState.character.y - 50,
+              text: 'CURSE BROKEN!',
+              color: 'text-green-400'
+            });
+          }
+        }
+        
         return boss;
       });
       
@@ -544,24 +846,23 @@ const AutoBattleRPG = () => {
 
   const spawnWave = useCallback((waveNumber) => {
     const enemyCount = Math.min(3 + waveNumber * 2, 15);
-    const levelFactor = Math.floor(gameState.character.level / 3);
+    const scaleFactor = Math.floor(gameState.character.level / 2) + Math.floor(waveNumber / 2);
     
-    // Check if boss wave
-    const isBossWave = waveNumber % 5 === 0;
+    const isBossWave = waveNumber % 3 === 0;
     
     if (isBossWave) {
-      // Spawn boss
-      const bossIndex = Math.min(Math.floor(waveNumber / 5) - 1, bossTypes.length - 1);
+      const bossIndex = Math.min((Math.floor(waveNumber / 3) - 1) % bossTypes.length, bossTypes.length - 1);
       const bossType = bossTypes[bossIndex];
       
       const boss = {
         id: Date.now() + Math.random(),
         ...bossType,
-        currentHealth: bossType.health + (levelFactor * 50),
-        maxHealth: bossType.health + (levelFactor * 50),
+        currentHealth: bossType.health + (scaleFactor * 100),
+        maxHealth: bossType.health + (scaleFactor * 100),
         x: 400 + (Math.random() - 0.5) * 200,
         y: 200 + (Math.random() - 0.5) * 200,
-        xp: bossType.xp + (levelFactor * 20),
+        xp: bossType.xp + (scaleFactor * 30),
+        damage: bossType.damage + (scaleFactor * 5),
         lastDamageTime: 0,
         lastAttackTime: 0,
         lastSpecialAttack: 0,
@@ -569,20 +870,36 @@ const AutoBattleRPG = () => {
         isBoss: true
       };
       
+      const bosses = [boss];
+      
+      if (waveNumber >= 15 && Math.random() < 0.3) {
+        const secondBossIndex = Math.min((bossIndex + 1) % bossTypes.length, bossTypes.length - 1);
+        const secondBossType = bossTypes[secondBossIndex];
+        const secondBoss = {
+          ...boss,
+          ...secondBossType,
+          id: Date.now() + Math.random() + 1,
+          x: 400 + (Math.random() - 0.5) * 300,
+          y: 200 + (Math.random() - 0.5) * 300,
+          currentHealth: secondBossType.health + (scaleFactor * 100),
+          maxHealth: secondBossType.health + (scaleFactor * 100),
+        };
+        bosses.push(secondBoss);
+      }
+      
       setGameState(prev => ({
         ...prev,
-        bosses: [boss],
+        bosses: bosses,
         enemies: [],
         bossProjectiles: [],
         waveProgress: 'active',
         waveStartTime: prev.gameTime
       }));
     } else {
-      // Regular enemy wave
       const newEnemies = [];
       for (let i = 0; i < enemyCount; i++) {
         const enemyTypeIndex = Math.min(
-          Math.floor(waveNumber / 3) + Math.floor(Math.random() * 2), 
+          Math.floor(waveNumber / 2) + Math.floor(Math.random() * 2), 
           enemyTypes.length - 1
         );
         const enemyType = enemyTypes[enemyTypeIndex];
@@ -592,15 +909,22 @@ const AutoBattleRPG = () => {
         const centerX = 400;
         const centerY = 300;
         
+        const isElite = waveNumber >= 6 && Math.random() < 0.25;
+        
         const newEnemy = {
           id: Date.now() + Math.random() + i,
           ...enemyType,
-          currentHealth: enemyType.health + (levelFactor * 10),
-          maxHealth: enemyType.health + (levelFactor * 10),
+          name: isElite ? `Elite ${enemyType.name}` : enemyType.name,
+          currentHealth: (enemyType.health + (scaleFactor * 25)) * (isElite ? 1.5 : 1),
+          maxHealth: (enemyType.health + (scaleFactor * 25)) * (isElite ? 1.5 : 1),
+          damage: (enemyType.damage + (scaleFactor * 3)) * (isElite ? 1.3 : 1),
+          speed: enemyType.speed * (isElite ? 1.2 : 1),
           x: centerX + Math.cos(angle) * distance,
           y: centerY + Math.sin(angle) * distance,
-          xp: enemyType.xp + (levelFactor * 5),
-          lastDamageTime: 0
+          xp: (enemyType.xp + (scaleFactor * 8)) * (isElite ? 1.5 : 1),
+          lastDamageTime: 0,
+          isElite: isElite,
+          color: isElite ? 'bg-orange-600' : enemyType.color
         };
         
         newEnemies.push(newEnemy);
@@ -628,7 +952,6 @@ const AutoBattleRPG = () => {
       const damage = newState.character.damage;
       const attackRange = newState.character.attackRange;
       
-      // Attack regular enemies
       const enemiesInRange = newState.enemies
         .map(enemy => ({
           enemy,
@@ -640,9 +963,8 @@ const AutoBattleRPG = () => {
         .filter(item => item.distance <= attackRange)
         .sort((a, b) => a.distance - b.distance);
 
-      // Attack bosses
       const bossesInRange = newState.bosses
-        .filter(boss => !boss.isInvisible) // Can't attack invisible bosses
+        .filter(boss => !boss.isInvisible)
         .map(boss => ({
           boss,
           distance: Math.sqrt(
@@ -699,7 +1021,6 @@ const AutoBattleRPG = () => {
             const boss = target.boss;
             let actualDamage = damage;
             
-            // Apply iron skin reduction
             if (boss.hasIronSkin) {
               actualDamage = Math.floor(damage * 0.3);
               addEffect({
@@ -758,15 +1079,15 @@ const AutoBattleRPG = () => {
     setGameState(prev => {
       let newState = { ...prev };
       
-      // Get all targets (enemies + bosses)
       const allTargets = [
         ...newState.enemies.map(enemy => ({...enemy, type: 'enemy'})),
         ...newState.bosses.filter(boss => !boss.isInvisible).map(boss => ({...boss, type: 'boss'}))
       ];
       
       if (newState.abilities.rockets > 0 && newState.gameTime % 3000 < 50 && allTargets.length > 0) {
-        const rocketDamage = newState.character.damage * 1.5;
-        const rocketsToFire = newState.abilities.rockets;
+        const rocketsLevel = newState.abilities.rockets;
+        const rocketDamage = newState.character.damage * (1.5 / (1 + rocketsLevel * 0.15));
+        const rocketsToFire = Math.min(rocketsLevel, 3);
         
         const sortedTargets = allTargets
           .map(target => ({
@@ -830,6 +1151,7 @@ const AutoBattleRPG = () => {
       }
 
       if (newState.abilities.fireball > 0 && newState.gameTime % 5000 < 50 && allTargets.length > 0) {
+        const fireballLevel = newState.abilities.fireball;
         const nearestTarget = allTargets.reduce((closest, target) => {
           const closestDist = Math.sqrt(
             Math.pow(newState.character.x - closest.x, 2) + 
@@ -848,13 +1170,15 @@ const AutoBattleRPG = () => {
         
         if (distance > 0) {
           const speed = 8;
+          const fireballDamage = newState.character.damage * (2.5 / (1 + fireballLevel * 0.2));
+          
           const fireball = {
             id: Date.now() + Math.random(),
             x: newState.character.x,
             y: newState.character.y,
             vx: (dx / distance) * speed,
             vy: (dy / distance) * speed,
-            damage: newState.character.damage * 2.5,
+            damage: fireballDamage,
             lifetime: 0
           };
           
@@ -863,8 +1187,9 @@ const AutoBattleRPG = () => {
       }
 
       if (newState.abilities.thunderStrike > 0 && newState.gameTime % 4000 < 50 && allTargets.length > 0) {
-        const thunderDamage = newState.character.damage * 2;
-        const strikeCount = Math.min(2 + newState.abilities.thunderStrike, allTargets.length);
+        const thunderLevel = newState.abilities.thunderStrike;
+        const thunderDamage = newState.character.damage * (2 / (1 + thunderLevel * 0.25));
+        const strikeCount = Math.min(2 + Math.floor(thunderLevel / 2), Math.min(5, allTargets.length));
         
         const shuffledTargets = [...allTargets].sort(() => Math.random() - 0.5);
         
@@ -890,7 +1215,7 @@ const AutoBattleRPG = () => {
             type: 'shock',
             x: target.x,
             y: target.y,
-            text: `-${actualDamage}`,
+            text: `-${Math.floor(actualDamage)}`,
             color: 'text-cyan-400'
           });
           
@@ -976,7 +1301,6 @@ const AutoBattleRPG = () => {
         newState.character.x = newX;
         newState.character.y = newY;
 
-        // Move regular enemies
         newState.enemies = newState.enemies.map(enemy => {
           const dx = newState.character.x - enemy.x;
           const dy = newState.character.y - enemy.y;
@@ -995,28 +1319,23 @@ const AutoBattleRPG = () => {
           return enemy;
         });
 
-        // Move bosses (more complex AI)
         newState.bosses = newState.bosses.map(boss => {
-          if (boss.isInvisible) return boss; // Don't move while invisible
+          if (boss.isInvisible) return boss;
           
           const dx = newState.character.x - boss.x;
           const dy = newState.character.y - boss.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          // Boss stays at medium range for attacks
           const idealDistance = 150;
           let moveX = 0, moveY = 0;
           
           if (distance > idealDistance + 50) {
-            // Move closer
             moveX = (dx / distance) * boss.speed;
             moveY = (dy / distance) * boss.speed;
           } else if (distance < idealDistance - 50) {
-            // Move away
             moveX = -(dx / distance) * boss.speed * 0.7;
             moveY = -(dy / distance) * boss.speed * 0.7;
           } else {
-            // Circle strafe
             const perpX = -dy / distance;
             const perpY = dx / distance;
             moveX = perpX * boss.speed * 0.5;
@@ -1029,7 +1348,6 @@ const AutoBattleRPG = () => {
           return { ...boss, x: newX, y: newY };
         });
 
-        // Update player projectiles
         const updatedProjectiles = [];
         newState.projectiles.forEach(projectile => {
           const newProjectile = {
@@ -1066,7 +1384,7 @@ const AutoBattleRPG = () => {
                   type: 'fireball_damage',
                   x: enemy.x,
                   y: enemy.y + 20,
-                  text: `-${newProjectile.damage}`,
+                  text: `-${Math.floor(newProjectile.damage)}`,
                   color: 'text-orange-600'
                 });
                 
@@ -1088,7 +1406,6 @@ const AutoBattleRPG = () => {
         
         newState.projectiles = updatedProjectiles;
 
-        // Update boss projectiles
         const updatedBossProjectiles = [];
         newState.bossProjectiles.forEach(projectile => {
           let newProjectile = {
@@ -1098,7 +1415,6 @@ const AutoBattleRPG = () => {
             lifetime: projectile.lifetime + 50
           };
 
-          // Homing projectiles
           if (projectile.homing && newProjectile.lifetime > 500) {
             const dx = newState.character.x - newProjectile.x;
             const dy = newState.character.y - newProjectile.y;
@@ -1115,7 +1431,6 @@ const AutoBattleRPG = () => {
               newProjectile.y >= -50 && newProjectile.y <= 650 && 
               newProjectile.lifetime < 5000) {
             
-            // Check collision with player
             const distance = Math.sqrt(
               Math.pow(newProjectile.x - newState.character.x, 2) + 
               Math.pow(newProjectile.y - newState.character.y, 2)
@@ -1147,7 +1462,6 @@ const AutoBattleRPG = () => {
         
         newState.bossProjectiles = updatedBossProjectiles;
 
-        // Check collision with regular enemies
         newState.enemies.forEach(enemy => {
           if (checkCollision(newState.character, enemy)) {
             const now = newState.gameTime;
@@ -1172,7 +1486,6 @@ const AutoBattleRPG = () => {
           }
         });
 
-        // Check collision with bosses
         newState.bosses.forEach(boss => {
           if (!boss.isInvisible && checkCollision(newState.character, boss)) {
             const now = newState.gameTime;
@@ -1224,11 +1537,16 @@ const AutoBattleRPG = () => {
         if (newState.character.xp >= newState.character.xpToNext) {
           newState.character.xp -= newState.character.xpToNext;
           newState.character.level++;
-          newState.character.xpToNext = Math.floor(newState.character.xpToNext * 1.3);
-          newState.character.maxHealth += 20;
-          newState.character.health = newState.character.maxHealth;
-          newState.character.damage += 5;
-          newState.character.attackSpeed = Math.max(200, newState.character.attackSpeed - 50);
+          newState.character.xpToNext = Math.floor(newState.character.xpToNext * 1.4);
+          
+          newState.character.maxHealth += 8;
+          newState.character.health += 12;
+          newState.character.damage += 2;
+          newState.character.attackSpeed = Math.max(300, newState.character.attackSpeed - 30);
+          
+          if (newState.character.health > newState.character.maxHealth) {
+            newState.character.health = newState.character.maxHealth;
+          }
           
           const shuffled = [...availableAbilities].sort(() => Math.random() - 0.5);
           newState.levelUpOptions = shuffled.slice(0, 3);
@@ -1250,7 +1568,21 @@ const AutoBattleRPG = () => {
     setGameState(prev => {
       const ability = availableAbilities.find(a => a.id === abilityId);
       let newState = ability.effect(prev);
-      newState.abilities = { ...newState.abilities, [abilityId]: newState.abilities[abilityId] + 1 };
+      
+      const currentLevel = newState.abilities[abilityId];
+      if (currentLevel < 5) {
+        newState.abilities = { ...newState.abilities, [abilityId]: currentLevel + 1 };
+      } else {
+        newState.character.damage += 1;
+        addEffect({
+          type: 'maxed',
+          x: newState.character.x,
+          y: newState.character.y - 40,
+          text: 'ABILITY MAXED! +1 DMG',
+          color: 'text-purple-400'
+        });
+      }
+      
       newState.isLevelingUp = false;
       newState.levelUpOptions = [];
       return newState;
@@ -1362,9 +1694,7 @@ const AutoBattleRPG = () => {
         <div className="absolute w-1 h-1 bg-white rounded-full animate-pulse" style={{left: '90%', top: '40%', animationDelay: '5s'}}></div>
       </div>
       
-      {/* Game Arena */}
       <div className="relative h-screen border-4 border-gray-700">
-        {/* Character */}
         <div 
           className={`absolute w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center z-10 shadow-lg border-4 border-blue-300 transition-all duration-75 ${
             showTutorial && tutorialSteps[tutorialStep]?.highlight === 'character' ? 'ring-4 ring-yellow-400' : ''
@@ -1385,7 +1715,6 @@ const AutoBattleRPG = () => {
           ></div>
         </div>
 
-        {/* Boss projectiles */}
         {gameState.bossProjectiles.map(projectile => {
           const size = projectile.size || 8;
           let emoji = '💀';
@@ -1403,6 +1732,18 @@ const AutoBattleRPG = () => {
           } else if (projectile.type === 'thousand') {
             emoji = '⚫';
             bgColor = 'bg-gray-900';
+          } else if (projectile.type === 'shadow') {
+            emoji = '👻';
+            bgColor = 'bg-indigo-700';
+          } else if (projectile.type === 'scythe') {
+            emoji = '💀';
+            bgColor = 'bg-purple-600';
+          } else if (projectile.type === 'hellfire') {
+            emoji = '🔥';
+            bgColor = 'bg-orange-700';
+          } else if (projectile.type === 'slash') {
+            emoji = '⚡';
+            bgColor = 'bg-pink-600';
           }
           
           return (
@@ -1421,7 +1762,6 @@ const AutoBattleRPG = () => {
           );
         })}
 
-        {/* Player projectiles */}
         {gameState.projectiles.map(projectile => (
           <div
             key={projectile.id}
@@ -1432,13 +1772,12 @@ const AutoBattleRPG = () => {
           </div>
         ))}
 
-        {/* Bosses */}
         {gameState.bosses.map(boss => (
           <div key={boss.id}>
             <div
               className={`absolute ${boss.color} rounded-lg flex items-center justify-center transition-all duration-75 shadow-xl border-4 border-red-600 ${
                 boss.isInvisible ? 'opacity-30' : ''
-              } ${boss.hasIronSkin ? 'ring-2 ring-gray-400' : ''}`}
+              } ${boss.hasIronSkin ? 'ring-2 ring-gray-400' : ''} ${boss.hasBloodFrenzy ? 'ring-2 ring-red-400' : ''}`}
               style={{ 
                 left: `${boss.x - boss.size}px`, 
                 top: `${boss.y - boss.size}px`,
@@ -1449,7 +1788,6 @@ const AutoBattleRPG = () => {
               <div className="w-4 h-4 bg-red-600 rounded-full animate-pulse"></div>
             </div>
             
-            {/* Boss name */}
             <div
               className="absolute text-sm font-bold text-red-400 bg-black bg-opacity-90 px-2 py-1 rounded whitespace-nowrap border border-red-500"
               style={{ 
@@ -1462,8 +1800,7 @@ const AutoBattleRPG = () => {
               {boss.name}
             </div>
             
-            {/* Boss status effects */}
-            {(boss.isInvisible || boss.hasIronSkin) && (
+            {(boss.isInvisible || boss.hasIronSkin || boss.hasBloodFrenzy) && (
               <div
                 className="absolute text-xs font-bold text-purple-300 bg-black bg-opacity-90 px-1 py-0.5 rounded whitespace-nowrap"
                 style={{ 
@@ -1475,10 +1812,10 @@ const AutoBattleRPG = () => {
               >
                 {boss.isInvisible && '👻 SHADOW'}
                 {boss.hasIronSkin && '🛡️ IRON SKIN'}
+                {boss.hasBloodFrenzy && '🩸 FRENZY'}
               </div>
             )}
             
-            {/* Boss health bar */}
             <div 
               className="absolute bg-gray-800 rounded border border-red-500"
               style={{ 
@@ -1496,7 +1833,6 @@ const AutoBattleRPG = () => {
           </div>
         ))}
 
-        {/* Regular enemies */}
         {gameState.enemies.map(enemy => (
           <div key={enemy.id}>
             <div
@@ -1551,9 +1887,14 @@ const AutoBattleRPG = () => {
               <div className="text-5xl font-bold text-green-400 animate-pulse">
                 WAVE {gameState.currentWave + 1} INCOMING!
               </div>
-              {(gameState.currentWave + 1) % 5 === 0 && (
+              {(gameState.currentWave + 1) % 3 === 0 && (
                 <div className="text-3xl font-bold text-red-500 animate-pulse">
-                  🌙 MOON BOSS APPROACHING! 🌙
+                  {(() => {
+                    const nextWave = gameState.currentWave + 1;
+                    const bossIndex = Math.min((Math.floor(nextWave / 3) - 1) % bossTypes.length, bossTypes.length - 1);
+                    const nextBoss = bossTypes[bossIndex];
+                    return `🌙 ${nextBoss.name} APPROACHES! 🌙`;
+                  })()}
                 </div>
               )}
             </div>
@@ -1573,7 +1914,7 @@ const AutoBattleRPG = () => {
               </div>
               <div className="text-lg font-bold text-yellow-400">
                 Wave {gameState.currentWave} 
-                {gameState.currentWave % 5 === 0 && gameState.bosses.length > 0 && (
+                {gameState.currentWave % 3 === 0 && gameState.bosses.length > 0 && (
                   <span className="text-red-400 text-sm ml-2">BOSS FIGHT</span>
                 )}
               </div>
@@ -1591,7 +1932,7 @@ const AutoBattleRPG = () => {
               <span className="text-sm">{gameState.character.health}/{gameState.character.maxHealth}</span>
             </div>
             <div className="text-sm">
-              Damage: {Math.round(gameState.character.damage)} | 
+              Damage: {Math.round(gameState.character.damage)} {gameState.character.cursedDamage && <span className="text-purple-400">💀 CURSED</span>} | 
               Attack Speed: {(1000 / gameState.character.attackSpeed).toFixed(1)}/s |
               Move Speed: {gameState.character.speed} |
               Range: {gameState.character.attackRange}
@@ -1622,7 +1963,7 @@ const AutoBattleRPG = () => {
                 return (
                   <div key={key} className="flex items-center space-x-2 bg-gray-700 px-2 py-1 rounded whitespace-nowrap">
                     <Icon className="w-4 h-4" />
-                    <span className="text-xs">{ability.name} {level}</span>
+                    <span className="text-xs">{ability.name} {level}{level === 5 && <span className="text-yellow-400"> MAX</span>}</span>
                   </div>
                 );
               })}
@@ -1678,7 +2019,6 @@ const AutoBattleRPG = () => {
         </div>
       </div>
 
-      {/* Tutorial Modal */}
       {showTutorial && (
         <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className={`bg-gray-800 p-8 rounded-lg max-w-md w-full mx-4 shadow-2xl border-2 border-gray-600 ${
@@ -1722,7 +2062,6 @@ const AutoBattleRPG = () => {
               </div>
             </div>
 
-            {/* Progress dots */}
             <div className="flex justify-center mt-4 space-x-2">
               {tutorialSteps.map((_, index) => (
                 <div 
@@ -1777,10 +2116,15 @@ const AutoBattleRPG = () => {
                       <Icon className="w-6 h-6 text-blue-400" />
                       <span className="font-semibold text-lg">{ability.name}</span>
                       {currentLevel > 0 && (
-                        <span className="text-sm bg-blue-600 px-2 py-1 rounded">Level {currentLevel}</span>
+                        <span className={`text-sm px-2 py-1 rounded ${currentLevel >= 5 ? 'bg-yellow-600' : 'bg-blue-600'}`}>
+                          Level {currentLevel}{currentLevel >= 5 && ' MAX'}
+                        </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-300">{ability.description}</p>
+                    <p className="text-sm text-gray-300">
+                      {ability.description}
+                      {currentLevel >= 5 && ' (Will give +1 damage instead)'}
+                    </p>
                   </button>
                 );
               })}
