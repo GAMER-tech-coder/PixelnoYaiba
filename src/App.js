@@ -49,55 +49,55 @@ const AutoBattleRPG = () => {
   const tutorialSteps = [
     {
       title: "Welcome to PixelnoYaiba!",
-      content: "An epic auto-battle RPG where you fight waves of enemies! Let's learn the basics.",
+      content: "An epic auto-battle RPG where you fight waves of enemies! Let's learn how to play this amazing game.",
       highlight: null,
       position: "center"
     },
     {
       title: "Your Character",
-      content: "This blue circle with a sword is you! The light blue circle shows your attack range.",
+      content: "This blue circle with a sword is you! The faint blue circle around you shows your attack range - enemies within this range will be automatically attacked.",
       highlight: "character",
       position: "center"
     },
     {
       title: "Movement Controls",
-      content: "Use WASD keys or Arrow Keys to move around and avoid enemies. Try moving now!",
+      content: "Use WASD keys or Arrow Keys to move around the battlefield. Position yourself strategically to avoid enemies and stay within attack range!",
       highlight: "controls",
       position: "bottom-left"
     },
     {
       title: "Health System",
-      content: "Your red health bar shows current health. If enemies touch you, you take damage. If it reaches 0, it's game over!",
+      content: "Your red health bar shows your current health. When enemies touch you, you take damage. If your health reaches 0, it's game over! Keep moving to survive!",
       highlight: "health",
       position: "top-left"
     },
     {
       title: "Experience & Leveling",
-      content: "Kill enemies to gain XP. When the XP bar fills up, you level up and get stronger! Each level increases damage, health, and attack speed.",
+      content: "Kill enemies to gain XP (experience points). When the XP bar fills up, you level up! Each level increases your damage (+5), health (+20), and attack speed.",
       highlight: "xp",
       position: "top-left"
     },
     {
       title: "Wave System",
-      content: "Enemies come in waves. Clear all enemies to advance to the next wave. Each wave gets progressively harder!",
+      content: "Enemies come in waves. Clear all enemies in a wave to advance to the next one. Each wave gets progressively harder with more and stronger enemies!",
       highlight: "wave",
       position: "top-center"
     },
     {
-      title: "Abilities",
-      content: "When you level up, choose from 3 random abilities to enhance your power. Each ability can be upgraded multiple times!",
+      title: "Abilities & Power-ups",
+      content: "When you level up, choose from 3 random abilities to enhance your power! Each ability can be upgraded multiple times. Build your perfect warrior!",
       highlight: "abilities",
       position: "top-left"
     },
     {
-      title: "Auto Combat",
-      content: "Your character automatically attacks the closest enemies within range. No need to click - just position yourself strategically!",
+      title: "Auto Combat System",
+      content: "Your character automatically attacks the closest enemies within your attack range. No clicking required - just focus on positioning and survival strategy!",
       highlight: "character",
       position: "center"
     },
     {
-      title: "Ready to Battle!",
-      content: "You're ready to start your epic journey! Click Start to begin fighting waves of monsters. Good luck, warrior!",
+      title: "Ready for Battle!",
+      content: "You're ready to begin your epic journey! Click the Start button to begin fighting waves of monsters. May your blade stay sharp, warrior!",
       highlight: "start-button",
       position: "bottom-left"
     }
@@ -730,15 +730,15 @@ const AutoBattleRPG = () => {
 
   return (
     <div 
-  className="min-h-screen text-white relative overflow-hidden"
-  style={{
-    backgroundImage: 'url("/background.png")',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'fixed'
-  }}>
-        <div className="absolute inset-0 opacity-10">
+      className="min-h-screen text-white relative overflow-hidden"
+      style={{
+        backgroundImage: 'url("/background.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}>
+      <div className="absolute inset-0 opacity-10">
         <div className="absolute w-2 h-2 bg-white rounded-full animate-pulse" style={{left: '10%', top: '20%', animationDelay: '0s'}}></div>
         <div className="absolute w-1 h-1 bg-white rounded-full animate-pulse" style={{left: '20%', top: '60%', animationDelay: '1s'}}></div>
         <div className="absolute w-2 h-2 bg-white rounded-full animate-pulse" style={{left: '70%', top: '30%', animationDelay: '2s'}}></div>
@@ -746,6 +746,7 @@ const AutoBattleRPG = () => {
         <div className="absolute w-2 h-2 bg-white rounded-full animate-pulse" style={{left: '50%', top: '80%', animationDelay: '4s'}}></div>
         <div className="absolute w-1 h-1 bg-white rounded-full animate-pulse" style={{left: '90%', top: '40%', animationDelay: '5s'}}></div>
       </div>
+      
       {/* Game Arena */}
       <div className="relative h-screen border-4 border-gray-700">
         {/* Character */}
@@ -947,9 +948,10 @@ const AutoBattleRPG = () => {
         </div>
       </div>
 
+      {/* Tutorial Modal */}
       {showTutorial && (
         <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className={`bg-gray-800 p-8 rounded-lg max-w-md w-full mx-4 ${
+          <div className={`bg-gray-800 p-8 rounded-lg max-w-md w-full mx-4 shadow-2xl border-2 border-gray-600 ${
             tutorialSteps[tutorialStep].position === 'top-left' ? 'absolute top-20 left-4' : 
             tutorialSteps[tutorialStep].position === 'bottom-left' ? 'absolute bottom-20 left-4' : 
             tutorialSteps[tutorialStep].position === 'top-center' ? 'absolute top-20 left-1/2 transform -translate-x-1/2' :
@@ -985,7 +987,7 @@ const AutoBattleRPG = () => {
                   onClick={nextTutorialStep}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-sm transition-all"
                 >
-                  {tutorialStep === tutorialSteps.length - 1 ? 'Finish' : 'Next'}
+                  {tutorialStep === tutorialSteps.length - 1 ? 'Start Playing!' : 'Next'}
                 </button>
               </div>
             </div>
