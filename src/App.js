@@ -120,7 +120,7 @@ const AutoBattleRPG = () => {
 
   const bossTypes = [
     {
-      name: 'Lower Moon Six: Kyouki',
+      name: 'Lower Moon Six: Ketsumaru',
       health: 600,
       xp: 150,
       color: 'bg-red-600',
@@ -873,17 +873,13 @@ const AutoBattleRPG = () => {
       
       const bosses = [boss];
       
+      // Multiple bosses at higher waves - spawn duplicate of same boss
       if (waveNumber >= 15 && Math.random() < 0.3) {
-        const secondBossIndex = Math.min((bossIndex + 1) % bossTypes.length, bossTypes.length - 1);
-        const secondBossType = bossTypes[secondBossIndex];
         const secondBoss = {
           ...boss,
-          ...secondBossType,
           id: Date.now() + Math.random() + 1,
           x: 400 + (Math.random() - 0.5) * 300,
           y: 200 + (Math.random() - 0.5) * 300,
-          currentHealth: secondBossType.health + (scaleFactor * 100),
-          maxHealth: secondBossType.health + (scaleFactor * 100),
         };
         bosses.push(secondBoss);
       }
@@ -1296,8 +1292,8 @@ const AutoBattleRPG = () => {
         if (keys['a'] || keys['arrowleft']) newX -= character.speed;
         if (keys['d'] || keys['arrowright']) newX += character.speed;
         
-        newX = Math.max(32, Math.min(768, newX));
-        newY = Math.max(32, Math.min(568, newY));
+        newX = Math.max(16, Math.min(1264, newX)); // Allow full screen width
+        newY = Math.max(16, Math.min(984, newY)); // Allow full screen height
         
         newState.character.x = newX;
         newState.character.y = newY;
@@ -1680,7 +1676,7 @@ const AutoBattleRPG = () => {
     <div 
       className="min-h-screen text-white relative overflow-hidden"
       style={{
-        fontFamily: "'BloodCrow', monospace, sans-serif",
+        fontFamily: "'bloodcrow', monospace, sans-serif",
         backgroundImage: 'url("/background.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -2139,4 +2135,3 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
-
