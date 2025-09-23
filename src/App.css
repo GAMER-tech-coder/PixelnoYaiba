@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'BloodCrow';
-  src: url('./assets/fonts/bloodcrow.ttf') format('truetype');
+  src: url('./bloodcrow.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
