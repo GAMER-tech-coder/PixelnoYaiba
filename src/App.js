@@ -653,7 +653,7 @@ const AutoBattleRPG = () => {
     <div 
   className="min-h-screen text-white relative overflow-hidden"
   style={{
-    backgroundImage: 'url("YOUR_IMAGE_URL_HERE")',
+    backgroundImage: 'url("/background.jpg")',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
@@ -900,4 +900,5 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
+
 
