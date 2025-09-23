@@ -86,6 +86,12 @@ const AutoBattleRPG = () => {
       position: "top-center"
     },
     {
+      title: "Boss Battles",
+      content: "Every 5th wave brings a powerful Moon-ranked boss! These enemies have special abilities, more health, and require strategic positioning to defeat.",
+      highlight: "wave",
+      position: "top-center"
+    },
+    {
       title: "Abilities & Power-ups",
       content: "When you level up, choose from 3 random abilities to enhance your power! Each ability can be upgraded multiple times. Build your perfect warrior!",
       highlight: "abilities",
@@ -120,10 +126,11 @@ const AutoBattleRPG = () => {
       color: 'bg-red-700',
       speed: 0.8,
       damage: 30,
-      size: 24, // Larger than normal enemies
+      size: 24,
       abilities: ['crimsonBlade'],
       attackCooldown: 3000,
-      projectileSpeed: 4
+      projectileSpeed: 4,
+      specialCooldown: 5000
     },
     {
       name: 'Lower Moon Two: Yamikaze', 
@@ -135,7 +142,8 @@ const AutoBattleRPG = () => {
       size: 24,
       abilities: ['shadowClone', 'voidStep'],
       attackCooldown: 2500,
-      projectileSpeed: 5
+      projectileSpeed: 5,
+      specialCooldown: 6000
     },
     {
       name: 'Lower Moon One: Tetsugan',
@@ -147,7 +155,8 @@ const AutoBattleRPG = () => {
       size: 28,
       abilities: ['ironSkin', 'meteorFist'],
       attackCooldown: 4000,
-      projectileSpeed: 3
+      projectileSpeed: 3,
+      specialCooldown: 8000
     },
     {
       name: 'Upper Moon Six: Kuroyuki',
@@ -159,7 +168,8 @@ const AutoBattleRPG = () => {
       size: 32,
       abilities: ['blizzardShadows', 'frozenTime'],
       attackCooldown: 2000,
-      projectileSpeed: 6
+      projectileSpeed: 6,
+      specialCooldown: 7000
     },
     {
       name: 'Upper Moon Three: Raijinmaru',
@@ -171,7 +181,8 @@ const AutoBattleRPG = () => {
       size: 32,
       abilities: ['thunderWrath', 'stormPhase'],
       attackCooldown: 1800,
-      projectileSpeed: 7
+      projectileSpeed: 7,
+      specialCooldown: 5500
     },
     {
       name: 'Upper Moon One: Yaminokage',
@@ -183,7 +194,8 @@ const AutoBattleRPG = () => {
       size: 36,
       abilities: ['eternalNight', 'thousandStrikes'],
       attackCooldown: 1500,
-      projectileSpeed: 8
+      projectileSpeed: 8,
+      specialCooldown: 4000
     }
   ];
 
@@ -272,6 +284,264 @@ const AutoBattleRPG = () => {
     return distance < 35;
   };
 
+  // Boss AI and special abilities
+  const executeBossAbilities = useCallback(() => {
+    setGameState(prev => {
+      let newState = { ...prev };
+      
+      newState.bosses = newState.bosses.map(boss => {
+        const now = newState.gameTime;
+        
+        // Regular projectile attack
+        if (now - boss.lastAttackTime > boss.attackCooldown) {
+          const dx = newState.character.x - boss.x;
+          const dy = newState.character.y - boss.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance > 0 && distance < 400) {
+            const projectile = {
+              id: Date.now() + Math.random(),
+              x: boss.x,
+              y: boss.y,
+              vx: (dx / distance) * boss.projectileSpeed,
+              vy: (dy / distance) * boss.projectileSpeed,
+              damage: boss.damage,
+              lifetime: 0,
+              type: 'boss'
+            };
+            
+            newState.bossProjectiles.push(projectile);
+            boss.lastAttackTime = now;
+          }
+        }
+        
+        // Special abilities
+        if (now - (boss.lastSpecialAttack || 0) > boss.specialCooldown) {
+          boss.lastSpecialAttack = now;
+          
+          // Execute special abilities based on boss type
+          if (boss.abilities.includes('crimsonBlade')) {
+            // Akemaru - Crimson Blade: Rapid fire projectiles in a spread
+            for (let i = 0; i < 5; i++) {
+              const angle = (i - 2) * 0.3; // Spread pattern
+              const dx = newState.character.x - boss.x;
+              const dy = newState.character.y - boss.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance > 0) {
+                const baseVx = (dx / distance) * boss.projectileSpeed * 1.5;
+                const baseVy = (dy / distance) * boss.projectileSpeed * 1.5;
+                
+                const rotatedVx = baseVx * Math.cos(angle) - baseVy * Math.sin(angle);
+                const rotatedVy = baseVx * Math.sin(angle) + baseVy * Math.cos(angle);
+                
+                const projectile = {
+                  id: Date.now() + Math.random() + i,
+                  x: boss.x,
+                  y: boss.y,
+                  vx: rotatedVx,
+                  vy: rotatedVy,
+                  damage: boss.damage * 1.2,
+                  lifetime: 0,
+                  type: 'crimson'
+                };
+                
+                newState.bossProjectiles.push(projectile);
+              }
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'CRIMSON BLADE!',
+              color: 'text-red-400'
+            });
+          }
+          
+          if (boss.abilities.includes('shadowClone')) {
+            // Yamikaze - Shadow Clone: Teleport and confuse
+            boss.isInvisible = true;
+            boss.invisibleUntil = now + 2000;
+            
+            // Teleport to random position
+            boss.x = 200 + Math.random() * 400;
+            boss.y = 150 + Math.random() * 300;
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'SHADOW CLONE!',
+              color: 'text-purple-400'
+            });
+          }
+          
+          if (boss.abilities.includes('ironSkin')) {
+            // Tetsugan - Iron Skin: Damage reduction
+            boss.hasIronSkin = true;
+            boss.ironSkinUntil = now + 4000;
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'IRON SKIN!',
+              color: 'text-gray-300'
+            });
+          }
+          
+          if (boss.abilities.includes('meteorFist')) {
+            // Tetsugan - Meteor Fist: Slow massive projectile
+            const dx = newState.character.x - boss.x;
+            const dy = newState.character.y - boss.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+              const projectile = {
+                id: Date.now() + Math.random(),
+                x: boss.x,
+                y: boss.y,
+                vx: (dx / distance) * boss.projectileSpeed * 0.7,
+                vy: (dy / distance) * boss.projectileSpeed * 0.7,
+                damage: boss.damage * 2.5,
+                lifetime: 0,
+                type: 'meteor',
+                size: 20
+              };
+              
+              newState.bossProjectiles.push(projectile);
+              
+              addEffect({
+                type: 'bossSpecial',
+                x: boss.x,
+                y: boss.y - 40,
+                text: 'METEOR FIST!',
+                color: 'text-orange-400'
+              });
+            }
+          }
+          
+          if (boss.abilities.includes('blizzardShadows')) {
+            // Kuroyuki - Blizzard Shadows: Multiple homing projectiles
+            for (let i = 0; i < 8; i++) {
+              const angle = (i / 8) * Math.PI * 2;
+              const projectile = {
+                id: Date.now() + Math.random() + i,
+                x: boss.x + Math.cos(angle) * 60,
+                y: boss.y + Math.sin(angle) * 60,
+                vx: Math.cos(angle) * boss.projectileSpeed * 0.5,
+                vy: Math.sin(angle) * boss.projectileSpeed * 0.5,
+                damage: boss.damage * 0.8,
+                lifetime: 0,
+                type: 'blizzard',
+                homing: true
+              };
+              
+              newState.bossProjectiles.push(projectile);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'BLIZZARD SHADOWS!',
+              color: 'text-blue-300'
+            });
+          }
+          
+          if (boss.abilities.includes('thunderWrath')) {
+            // Raijinmaru - Thunder Wrath: Lightning storm
+            for (let i = 0; i < 6; i++) {
+              setTimeout(() => {
+                const randomX = 100 + Math.random() * 600;
+                const randomY = 100 + Math.random() * 400;
+                
+                addEffect({
+                  type: 'lightning',
+                  x: randomX,
+                  y: randomY,
+                  text: '⚡',
+                  color: 'text-yellow-300'
+                });
+                
+                // Check if player is near lightning
+                const dx = newState.character.x - randomX;
+                const dy = newState.character.y - randomY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 50) {
+                  newState.character.health -= boss.damage * 0.7;
+                  addEffect({
+                    type: 'playerDamage',
+                    x: newState.character.x,
+                    y: newState.character.y,
+                    text: `-${Math.floor(boss.damage * 0.7)}`,
+                    color: 'text-yellow-600'
+                  });
+                }
+              }, i * 300);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'THUNDER WRATH!',
+              color: 'text-yellow-400'
+            });
+          }
+          
+          if (boss.abilities.includes('thousandStrikes')) {
+            // Yaminokage - Thousand Strikes: Overwhelming projectile barrage
+            for (let i = 0; i < 20; i++) {
+              setTimeout(() => {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = boss.projectileSpeed * (0.8 + Math.random() * 0.4);
+                
+                const projectile = {
+                  id: Date.now() + Math.random() + i,
+                  x: boss.x,
+                  y: boss.y,
+                  vx: Math.cos(angle) * speed,
+                  vy: Math.sin(angle) * speed,
+                  damage: boss.damage * 0.6,
+                  lifetime: 0,
+                  type: 'thousand'
+                };
+                
+                newState.bossProjectiles.push(projectile);
+              }, i * 100);
+            }
+            
+            addEffect({
+              type: 'bossSpecial',
+              x: boss.x,
+              y: boss.y - 40,
+              text: 'THOUSAND STRIKES!',
+              color: 'text-black'
+            });
+          }
+        }
+        
+        // Clear temporary effects
+        if (boss.invisibleUntil && now > boss.invisibleUntil) {
+          boss.isInvisible = false;
+          delete boss.invisibleUntil;
+        }
+        
+        if (boss.ironSkinUntil && now > boss.ironSkinUntil) {
+          boss.hasIronSkin = false;
+          delete boss.ironSkinUntil;
+        }
+        
+        return boss;
+      });
+      
+      return newState;
+    });
+  }, [addEffect]);
+
   const spawnWave = useCallback((waveNumber) => {
     const enemyCount = Math.min(3 + waveNumber * 2, 15);
     const levelFactor = Math.floor(gameState.character.level / 3);
@@ -294,6 +564,7 @@ const AutoBattleRPG = () => {
         xp: bossType.xp + (levelFactor * 20),
         lastDamageTime: 0,
         lastAttackTime: 0,
+        lastSpecialAttack: 0,
         abilityPhase: 0,
         isBoss: true
       };
@@ -301,7 +572,8 @@ const AutoBattleRPG = () => {
       setGameState(prev => ({
         ...prev,
         bosses: [boss],
-        enemies: [], // No regular enemies during boss fights
+        enemies: [],
+        bossProjectiles: [],
         waveProgress: 'active',
         waveStartTime: prev.gameTime
       }));
@@ -338,6 +610,7 @@ const AutoBattleRPG = () => {
         ...prev,
         enemies: newEnemies,
         bosses: [],
+        bossProjectiles: [],
         waveProgress: 'active',
         waveStartTime: prev.gameTime
       }));
@@ -369,6 +642,7 @@ const AutoBattleRPG = () => {
 
       // Attack bosses
       const bossesInRange = newState.bosses
+        .filter(boss => !boss.isInvisible) // Can't attack invisible bosses
         .map(boss => ({
           boss,
           distance: Math.sqrt(
@@ -423,13 +697,27 @@ const AutoBattleRPG = () => {
             }
           } else if (target.type === 'boss') {
             const boss = target.boss;
-            const newHealth = boss.currentHealth - damage;
+            let actualDamage = damage;
+            
+            // Apply iron skin reduction
+            if (boss.hasIronSkin) {
+              actualDamage = Math.floor(damage * 0.3);
+              addEffect({
+                type: 'bossResist',
+                x: boss.x,
+                y: boss.y - 20,
+                text: 'RESISTED!',
+                color: 'text-gray-400'
+              });
+            }
+            
+            const newHealth = boss.currentHealth - actualDamage;
             
             addEffect({
               type: 'damage',
               x: boss.x,
               y: boss.y,
-              text: `-${damage}`,
+              text: `-${actualDamage}`,
               color: 'text-red-500'
             });
             
@@ -470,64 +758,92 @@ const AutoBattleRPG = () => {
     setGameState(prev => {
       let newState = { ...prev };
       
-      if (newState.abilities.rockets > 0 && newState.gameTime % 3000 < 50) {
+      // Get all targets (enemies + bosses)
+      const allTargets = [
+        ...newState.enemies.map(enemy => ({...enemy, type: 'enemy'})),
+        ...newState.bosses.filter(boss => !boss.isInvisible).map(boss => ({...boss, type: 'boss'}))
+      ];
+      
+      if (newState.abilities.rockets > 0 && newState.gameTime % 3000 < 50 && allTargets.length > 0) {
         const rocketDamage = newState.character.damage * 1.5;
         const rocketsToFire = newState.abilities.rockets;
         
-        const sortedEnemies = newState.enemies
-          .map(enemy => ({
-            enemy,
+        const sortedTargets = allTargets
+          .map(target => ({
+            target,
             distance: Math.sqrt(
-              Math.pow(newState.character.x - enemy.x, 2) + 
-              Math.pow(newState.character.y - enemy.y, 2)
+              Math.pow(newState.character.x - target.x, 2) + 
+              Math.pow(newState.character.y - target.y, 2)
             )
           }))
           .sort((a, b) => a.distance - b.distance);
         
-        const enemiesToHit = Math.min(rocketsToFire, sortedEnemies.length);
-        const targetIds = new Set();
+        const targetsToHit = Math.min(rocketsToFire, sortedTargets.length);
         
-        for (let i = 0; i < enemiesToHit; i++) {
-          targetIds.add(sortedEnemies[i].enemy.id);
-        }
-        
-        newState.enemies = newState.enemies.map(enemy => {
-          if (targetIds.has(enemy.id)) {
-            addEffect({
-              type: 'rocket',
-              x: enemy.x,
-              y: enemy.y,
-              text: '🚀',
-              color: 'text-orange-500'
-            });
-            
-            const newHealth = enemy.currentHealth - rocketDamage;
+        for (let i = 0; i < targetsToHit; i++) {
+          const target = sortedTargets[i].target;
+          
+          addEffect({
+            type: 'rocket',
+            x: target.x,
+            y: target.y,
+            text: '🚀',
+            color: 'text-orange-500'
+          });
+          
+          let actualDamage = rocketDamage;
+          if (target.type === 'boss' && target.hasIronSkin) {
+            actualDamage = Math.floor(rocketDamage * 0.3);
+          }
+          
+          const newHealth = target.currentHealth - actualDamage;
+          
+          if (target.type === 'enemy') {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
-              newState.character.xp += enemy.xp;
-              return null;
+              newState.character.xp += target.xp;
+              newState.enemies = newState.enemies.filter(e => e.id !== target.id);
+            } else {
+              newState.enemies = newState.enemies.map(e => 
+                e.id === target.id ? { ...e, currentHealth: newHealth } : e
+              );
             }
-            return { ...enemy, currentHealth: newHealth };
+          } else if (target.type === 'boss') {
+            if (newHealth <= 0) {
+              newState.enemiesKilled++;
+              newState.character.xp += target.xp;
+              addEffect({
+                type: 'kill',
+                x: target.x,
+                y: target.y,
+                text: `BOSS DEFEATED! +${target.xp} XP`,
+                color: 'text-gold-400'
+              });
+              newState.bosses = newState.bosses.filter(b => b.id !== target.id);
+            } else {
+              newState.bosses = newState.bosses.map(b => 
+                b.id === target.id ? { ...b, currentHealth: newHealth } : b
+              );
+            }
           }
-          return enemy;
-        }).filter(Boolean);
+        }
       }
 
-      if (newState.abilities.fireball > 0 && newState.gameTime % 5000 < 50 && newState.enemies.length > 0) {
-        const nearestEnemy = newState.enemies.reduce((closest, enemy) => {
+      if (newState.abilities.fireball > 0 && newState.gameTime % 5000 < 50 && allTargets.length > 0) {
+        const nearestTarget = allTargets.reduce((closest, target) => {
           const closestDist = Math.sqrt(
             Math.pow(newState.character.x - closest.x, 2) + 
             Math.pow(newState.character.y - closest.y, 2)
           );
-          const enemyDist = Math.sqrt(
-            Math.pow(newState.character.x - enemy.x, 2) + 
-            Math.pow(newState.character.y - enemy.y, 2)
+          const targetDist = Math.sqrt(
+            Math.pow(newState.character.x - target.x, 2) + 
+            Math.pow(newState.character.y - target.y, 2)
           );
-          return enemyDist < closestDist ? enemy : closest;
+          return targetDist < closestDist ? target : closest;
         });
 
-        const dx = nearestEnemy.x - newState.character.x;
-        const dy = nearestEnemy.y - newState.character.y;
+        const dx = nearestTarget.x - newState.character.x;
+        const dy = nearestTarget.y - newState.character.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance > 0) {
@@ -546,44 +862,67 @@ const AutoBattleRPG = () => {
         }
       }
 
-      if (newState.abilities.thunderStrike > 0 && newState.gameTime % 4000 < 50 && newState.enemies.length > 0) {
+      if (newState.abilities.thunderStrike > 0 && newState.gameTime % 4000 < 50 && allTargets.length > 0) {
         const thunderDamage = newState.character.damage * 2;
-        const strikeCount = Math.min(2 + newState.abilities.thunderStrike, newState.enemies.length);
+        const strikeCount = Math.min(2 + newState.abilities.thunderStrike, allTargets.length);
         
-        const shuffledEnemies = [...newState.enemies].sort(() => Math.random() - 0.5);
-        const targetIds = new Set();
+        const shuffledTargets = [...allTargets].sort(() => Math.random() - 0.5);
         
         for (let i = 0; i < strikeCount; i++) {
-          targetIds.add(shuffledEnemies[i].id);
+          const target = shuffledTargets[i];
+          
           addEffect({
             type: 'lightning',
-            x: shuffledEnemies[i].x,
-            y: shuffledEnemies[i].y,
+            x: target.x,
+            y: target.y,
             text: '⚡',
             color: 'text-blue-400'
           });
-        }
-        
-        newState.enemies = newState.enemies.map(enemy => {
-          if (targetIds.has(enemy.id)) {
-            const newHealth = enemy.currentHealth - thunderDamage;
-            addEffect({
-              type: 'shock',
-              x: enemy.x,
-              y: enemy.y,
-              text: `-${thunderDamage}`,
-              color: 'text-cyan-400'
-            });
-            
+          
+          let actualDamage = thunderDamage;
+          if (target.type === 'boss' && target.hasIronSkin) {
+            actualDamage = Math.floor(thunderDamage * 0.3);
+          }
+          
+          const newHealth = target.currentHealth - actualDamage;
+          
+          addEffect({
+            type: 'shock',
+            x: target.x,
+            y: target.y,
+            text: `-${actualDamage}`,
+            color: 'text-cyan-400'
+          });
+          
+          if (target.type === 'enemy') {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
-              newState.character.xp += enemy.xp;
-              return null;
+              newState.character.xp += target.xp;
+              newState.enemies = newState.enemies.filter(e => e.id !== target.id);
+            } else {
+              newState.enemies = newState.enemies.map(e => 
+                e.id === target.id ? { ...e, currentHealth: newHealth } : e
+              );
             }
-            return { ...enemy, currentHealth: newHealth };
+          } else if (target.type === 'boss') {
+            if (newHealth <= 0) {
+              newState.enemiesKilled++;
+              newState.character.xp += target.xp;
+              addEffect({
+                type: 'kill',
+                x: target.x,
+                y: target.y,
+                text: `BOSS DEFEATED! +${target.xp} XP`,
+                color: 'text-gold-400'
+              });
+              newState.bosses = newState.bosses.filter(b => b.id !== target.id);
+            } else {
+              newState.bosses = newState.bosses.map(b => 
+                b.id === target.id ? { ...b, currentHealth: newHealth } : b
+              );
+            }
           }
-          return enemy;
-        }).filter(Boolean);
+        }
       }
 
       return newState;
@@ -637,6 +976,7 @@ const AutoBattleRPG = () => {
         newState.character.x = newX;
         newState.character.y = newY;
 
+        // Move regular enemies
         newState.enemies = newState.enemies.map(enemy => {
           const dx = newState.character.x - enemy.x;
           const dy = newState.character.y - enemy.y;
@@ -655,6 +995,41 @@ const AutoBattleRPG = () => {
           return enemy;
         });
 
+        // Move bosses (more complex AI)
+        newState.bosses = newState.bosses.map(boss => {
+          if (boss.isInvisible) return boss; // Don't move while invisible
+          
+          const dx = newState.character.x - boss.x;
+          const dy = newState.character.y - boss.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // Boss stays at medium range for attacks
+          const idealDistance = 150;
+          let moveX = 0, moveY = 0;
+          
+          if (distance > idealDistance + 50) {
+            // Move closer
+            moveX = (dx / distance) * boss.speed;
+            moveY = (dy / distance) * boss.speed;
+          } else if (distance < idealDistance - 50) {
+            // Move away
+            moveX = -(dx / distance) * boss.speed * 0.7;
+            moveY = -(dy / distance) * boss.speed * 0.7;
+          } else {
+            // Circle strafe
+            const perpX = -dy / distance;
+            const perpY = dx / distance;
+            moveX = perpX * boss.speed * 0.5;
+            moveY = perpY * boss.speed * 0.5;
+          }
+          
+          const newX = Math.max(boss.size, Math.min(800 - boss.size, boss.x + moveX));
+          const newY = Math.max(boss.size, Math.min(600 - boss.size, boss.y + moveY));
+          
+          return { ...boss, x: newX, y: newY };
+        });
+
+        // Update player projectiles
         const updatedProjectiles = [];
         newState.projectiles.forEach(projectile => {
           const newProjectile = {
@@ -713,6 +1088,66 @@ const AutoBattleRPG = () => {
         
         newState.projectiles = updatedProjectiles;
 
+        // Update boss projectiles
+        const updatedBossProjectiles = [];
+        newState.bossProjectiles.forEach(projectile => {
+          let newProjectile = {
+            ...projectile,
+            x: projectile.x + projectile.vx,
+            y: projectile.y + projectile.vy,
+            lifetime: projectile.lifetime + 50
+          };
+
+          // Homing projectiles
+          if (projectile.homing && newProjectile.lifetime > 500) {
+            const dx = newState.character.x - newProjectile.x;
+            const dy = newState.character.y - newProjectile.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+              const speed = Math.sqrt(newProjectile.vx ** 2 + newProjectile.vy ** 2);
+              newProjectile.vx = (dx / distance) * speed;
+              newProjectile.vy = (dy / distance) * speed;
+            }
+          }
+
+          if (newProjectile.x >= -50 && newProjectile.x <= 850 && 
+              newProjectile.y >= -50 && newProjectile.y <= 650 && 
+              newProjectile.lifetime < 5000) {
+            
+            // Check collision with player
+            const distance = Math.sqrt(
+              Math.pow(newProjectile.x - newState.character.x, 2) + 
+              Math.pow(newProjectile.y - newState.character.y, 2)
+            );
+            
+            const hitRadius = projectile.size ? projectile.size : 15;
+            
+            if (distance < hitRadius) {
+              newState.character.health -= newProjectile.damage;
+              
+              addEffect({
+                type: 'playerDamage',
+                x: newState.character.x,
+                y: newState.character.y,
+                text: `-${newProjectile.damage}`,
+                color: 'text-red-600'
+              });
+              
+              if (newState.character.health <= 0) {
+                newState.character.health = 0;
+                setGameOver(true);
+                setIsPlaying(false);
+              }
+            } else {
+              updatedBossProjectiles.push(newProjectile);
+            }
+          }
+        });
+        
+        newState.bossProjectiles = updatedBossProjectiles;
+
+        // Check collision with regular enemies
         newState.enemies.forEach(enemy => {
           if (checkCollision(newState.character, enemy)) {
             const now = newState.gameTime;
@@ -725,6 +1160,31 @@ const AutoBattleRPG = () => {
                 x: newState.character.x,
                 y: newState.character.y,
                 text: `-${enemy.damage}`,
+                color: 'text-red-600'
+              });
+              
+              if (newState.character.health <= 0) {
+                newState.character.health = 0;
+                setGameOver(true);
+                setIsPlaying(false);
+              }
+            }
+          }
+        });
+
+        // Check collision with bosses
+        newState.bosses.forEach(boss => {
+          if (!boss.isInvisible && checkCollision(newState.character, boss)) {
+            const now = newState.gameTime;
+            if (now - (boss.lastPlayerDamage || 0) > 1000) {
+              newState.character.health -= boss.damage;
+              boss.lastPlayerDamage = now;
+              
+              addEffect({
+                type: 'playerDamage',
+                x: newState.character.x,
+                y: newState.character.y,
+                text: `-${boss.damage}`,
                 color: 'text-red-600'
               });
               
@@ -780,10 +1240,11 @@ const AutoBattleRPG = () => {
 
       attackEnemies();
       executeAbilities();
+      executeBossAbilities();
     }, 50);
 
     return () => clearInterval(gameLoop);
-  }, [isPlaying, gameOver, attackEnemies, executeAbilities, spawnWave, addEffect]);
+  }, [isPlaying, gameOver, attackEnemies, executeAbilities, executeBossAbilities, spawnWave, addEffect]);
 
   const chooseAbility = (abilityId) => {
     setGameState(prev => {
@@ -855,6 +1316,8 @@ const AutoBattleRPG = () => {
         attackRange: 120
       },
       enemies: [],
+      bosses: [],
+      bossProjectiles: [],
       projectiles: [],
       enemiesKilled: 0,
       currentWave: 1,
@@ -923,15 +1386,40 @@ const AutoBattleRPG = () => {
         </div>
 
         {/* Boss projectiles */}
-        {gameState.bossProjectiles.map(projectile => (
-          <div
-            key={projectile.id}
-            className="absolute w-4 h-4 bg-red-600 rounded-full animate-pulse z-15"
-            style={{ left: `${projectile.x - 8}px`, top: `${projectile.y - 8}px` }}
-          >
-            💀
-          </div>
-        ))}
+        {gameState.bossProjectiles.map(projectile => {
+          const size = projectile.size || 8;
+          let emoji = '💀';
+          let bgColor = 'bg-red-600';
+          
+          if (projectile.type === 'crimson') {
+            emoji = '🗡️';
+            bgColor = 'bg-red-700';
+          } else if (projectile.type === 'meteor') {
+            emoji = '☄️';
+            bgColor = 'bg-orange-600';
+          } else if (projectile.type === 'blizzard') {
+            emoji = '❄️';
+            bgColor = 'bg-blue-400';
+          } else if (projectile.type === 'thousand') {
+            emoji = '⚫';
+            bgColor = 'bg-gray-900';
+          }
+          
+          return (
+            <div
+              key={projectile.id}
+              className={`absolute ${bgColor} rounded-full animate-pulse z-15 flex items-center justify-center text-xs`}
+              style={{ 
+                left: `${projectile.x - size}px`, 
+                top: `${projectile.y - size}px`,
+                width: `${size * 2}px`,
+                height: `${size * 2}px`
+              }}
+            >
+              {emoji}
+            </div>
+          );
+        })}
 
         {/* Player projectiles */}
         {gameState.projectiles.map(projectile => (
@@ -948,7 +1436,9 @@ const AutoBattleRPG = () => {
         {gameState.bosses.map(boss => (
           <div key={boss.id}>
             <div
-              className={`absolute ${boss.color} rounded-lg flex items-center justify-center transition-all duration-75 shadow-xl border-4 border-red-600`}
+              className={`absolute ${boss.color} rounded-lg flex items-center justify-center transition-all duration-75 shadow-xl border-4 border-red-600 ${
+                boss.isInvisible ? 'opacity-30' : ''
+              } ${boss.hasIronSkin ? 'ring-2 ring-gray-400' : ''}`}
               style={{ 
                 left: `${boss.x - boss.size}px`, 
                 top: `${boss.y - boss.size}px`,
@@ -971,6 +1461,22 @@ const AutoBattleRPG = () => {
             >
               {boss.name}
             </div>
+            
+            {/* Boss status effects */}
+            {(boss.isInvisible || boss.hasIronSkin) && (
+              <div
+                className="absolute text-xs font-bold text-purple-300 bg-black bg-opacity-90 px-1 py-0.5 rounded whitespace-nowrap"
+                style={{ 
+                  left: `${boss.x - boss.size}px`, 
+                  top: `${boss.y - boss.size - 50}px`,
+                  transform: 'translateX(-50%)',
+                  marginLeft: `${boss.size}px`
+                }}
+              >
+                {boss.isInvisible && '👻 SHADOW'}
+                {boss.hasIronSkin && '🛡️ IRON SKIN'}
+              </div>
+            )}
             
             {/* Boss health bar */}
             <div 
@@ -1041,8 +1547,15 @@ const AutoBattleRPG = () => {
             </div>
           )}
           {gameState.waveProgress === 'transition' && (
-            <div className="text-5xl font-bold text-green-400 animate-pulse">
-              WAVE {gameState.currentWave + 1} INCOMING!
+            <div className="space-y-2">
+              <div className="text-5xl font-bold text-green-400 animate-pulse">
+                WAVE {gameState.currentWave + 1} INCOMING!
+              </div>
+              {(gameState.currentWave + 1) % 5 === 0 && (
+                <div className="text-3xl font-bold text-red-500 animate-pulse">
+                  🌙 MOON BOSS APPROACHING! 🌙
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1058,7 +1571,12 @@ const AutoBattleRPG = () => {
               <div className="text-sm">
                 XP: {gameState.character.xp}/{gameState.character.xpToNext}
               </div>
-              <div className="text-lg font-bold text-yellow-400">Wave {gameState.currentWave}</div>
+              <div className="text-lg font-bold text-yellow-400">
+                Wave {gameState.currentWave} 
+                {gameState.currentWave % 5 === 0 && gameState.bosses.length > 0 && (
+                  <span className="text-red-400 text-sm ml-2">BOSS FIGHT</span>
+                )}
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Heart className="w-4 h-4 text-red-500" />
@@ -1082,7 +1600,12 @@ const AutoBattleRPG = () => {
 
           <div className="text-right space-y-1">
             <div className="text-lg font-bold bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-1">Enemies Killed: {gameState.enemiesKilled}</div>
-            <div className="text-sm bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-1">Active Enemies: {gameState.enemies.length}</div>
+            <div className="text-sm bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-1">Active Enemies: {gameState.enemies.length + gameState.bosses.length}</div>
+            {gameState.bosses.length > 0 && (
+              <div className="text-sm bg-red-800 bg-opacity-50 border border-red-400 rounded px-3 py-1">
+                🔥 BOSS ACTIVE
+              </div>
+            )}
           </div>
         </div>
 
@@ -1130,7 +1653,7 @@ const AutoBattleRPG = () => {
             {gameOver ? 'Restart' : isPlaying ? 'Pause' : 'Start'}
           </button>
           
-          {isPlaying && gameState.enemies.length === 0 && gameState.waveProgress !== 'transition' && (
+          {isPlaying && gameState.enemies.length === 0 && gameState.bosses.length === 0 && gameState.waveProgress !== 'transition' && (
             <button 
               onClick={forceNextWave}
               className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-bold text-sm transition-all"
