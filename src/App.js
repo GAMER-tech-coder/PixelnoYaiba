@@ -746,13 +746,13 @@ const AutoBattleRPG = () => {
           newState.waveProgress = 'preparing';
         }
         
-        if (newState.waveProgress === 'preparing' && newState.enemies.length === 0) {
+        if (newState.waveProgress === 'preparing' && newState.enemies.length === 0 && newState.bosses.length === 0) {
           if (newState.gameTime - newState.waveTransitionTime > 7000) {
             spawnWave(newState.currentWave);
           }
         }
         
-        if (newState.enemies.length === 0 && newState.waveProgress === 'active') {
+        if (newState.enemies.length === 0 && newState.bosses.length === 0 && newState.waveProgress === 'active') {
           newState.waveProgress = 'cleared';
           newState.waveTransitionTime = newState.gameTime;
         }
