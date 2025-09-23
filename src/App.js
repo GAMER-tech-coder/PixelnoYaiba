@@ -650,8 +650,16 @@ const AutoBattleRPG = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
+    <div 
+  className="min-h-screen text-white relative overflow-hidden"
+  style={{
+    backgroundImage: 'url("YOUR_IMAGE_URL_HERE")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed'
+  }}>
+        <div className="absolute inset-0 opacity-10">
         <div className="absolute w-2 h-2 bg-white rounded-full animate-pulse" style={{left: '10%', top: '20%', animationDelay: '0s'}}></div>
         <div className="absolute w-1 h-1 bg-white rounded-full animate-pulse" style={{left: '20%', top: '60%', animationDelay: '1s'}}></div>
         <div className="absolute w-2 h-2 bg-white rounded-full animate-pulse" style={{left: '70%', top: '30%', animationDelay: '2s'}}></div>
@@ -892,3 +900,4 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
+
