@@ -254,7 +254,7 @@ const AutoBattleRPG = () => {
     });
   }, [addEffect]);
 
-  const useAbilities = useCallback(() => {
+  const executeAbilities = useCallback(() => {
     setGameState(prev => {
       let newState = { ...prev };
       
@@ -567,11 +567,11 @@ const AutoBattleRPG = () => {
       });
 
       attackEnemies();
-      useAbilities();
+      executeAbilities();
     }, 50);
 
     return () => clearInterval(gameLoop);
-  }, [isPlaying, gameOver, attackEnemies, useAbilities, spawnWave, addEffect]);
+  }, [isPlaying, gameOver, attackEnemies, executeAbilities, spawnWave, addEffect]);
 
   const chooseAbility = (abilityId) => {
     setGameState(prev => {
