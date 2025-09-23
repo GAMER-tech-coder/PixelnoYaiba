@@ -1677,6 +1677,7 @@ const AutoBattleRPG = () => {
       className="min-h-screen text-white relative overflow-hidden"
       style={{
         fontFamily: "'BloodCrow', monospace, sans-serif",
+        letterSpacing: '0.08em',
         backgroundImage: 'url("/background.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -1976,7 +1977,7 @@ const AutoBattleRPG = () => {
         }`}>
           Move: WASD / Arrow Keys
         </div>
-        <div className="space-x-2">
+        <div className="space-x-2" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.05em' }}>
           <button 
             onClick={toggleGame}
             className={`px-6 py-3 rounded-lg font-bold transition-all ${
@@ -2135,4 +2136,3 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
-
