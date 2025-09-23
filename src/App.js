@@ -1676,7 +1676,7 @@ const AutoBattleRPG = () => {
     <div 
       className="min-h-screen text-white relative overflow-hidden"
       style={{
-        fontFamily: "'bloodcrow', monospace, sans-serif",
+        fontFamily: "'BloodCrow', monospace, sans-serif",
         backgroundImage: 'url("/background.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -2135,3 +2135,4 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
+
