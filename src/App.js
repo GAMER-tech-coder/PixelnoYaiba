@@ -1142,6 +1142,15 @@ const AutoBattleRPG = () => {
             color: 'text-orange-500'
           });
           
+          // Add rocket burst animation
+          addEffect({
+            type: 'rocketBurst',
+            x: target.x,
+            y: target.y,
+            text: '',
+            color: 'text-orange-500'
+          });
+          
           // Add explosion effect
           addEffect({
             type: 'explosion',
@@ -1437,6 +1446,15 @@ const AutoBattleRPG = () => {
                   y: enemy.y,
                   text: '🔥',
                   color: 'text-red-600'
+                });
+                
+                // Add fireball burst animation
+                addEffect({
+                  type: 'fireballBurst',
+                  x: enemy.x,
+                  y: enemy.y,
+                  text: '',
+                  color: 'text-orange-500'
                 });
                 
                 addEffect({
@@ -1976,7 +1994,63 @@ const AutoBattleRPG = () => {
             );
           }
           
-          // Special rendering for thunder slash effects
+          // Special rendering for fireball burst effects
+          if (effect.type === 'fireballBurst') {
+            return (
+              <div
+                key={effect.id}
+                className="absolute pointer-events-none z-24"
+                style={{ 
+                  left: `${effect.x - 30}px`, 
+                  top: `${effect.y - 30}px`,
+                  opacity: Math.max(0, 1 - (age / 400)),
+                  transform: `scale(${1 + (age / 150)})`, // Quick expansion
+                }}
+              >
+                <div 
+                  className="w-16 h-16 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(249, 115, 22, 0.6) 40%, rgba(245, 101, 101, 0.3) 70%, transparent 100%)',
+                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)'
+                  }}
+                ></div>
+              </div>
+            );
+          }
+          
+          // Special rendering for rocket burst effects
+          if (effect.type === 'rocketBurst') {
+            return (
+              <div
+                key={effect.id}
+                className="absolute pointer-events-none z-24"
+                style={{ 
+                  left: `${effect.x - 35}px`, 
+                  top: `${effect.y - 35}px`,
+                  opacity: Math.max(0, 1 - (age / 450)),
+                  transform: `scale(${1 + (age / 120)})`, // Faster expansion than fireball
+                }}
+              >
+                <div 
+                  className="w-20 h-20 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(249, 115, 22, 0.9) 0%, rgba(234, 179, 8, 0.7) 30%, rgba(251, 191, 36, 0.5) 60%, transparent 80%)',
+                    boxShadow: '0 0 25px rgba(249, 115, 22, 0.8), 0 0 40px rgba(234, 179, 8, 0.4)'
+                  }}
+                ></div>
+                {/* Secondary shockwave */}
+                <div 
+                  className="absolute w-24 h-24 rounded-full"
+                  style={{
+                    left: '-10px',
+                    top: '-10px',
+                    background: 'radial-gradient(circle, transparent 60%, rgba(251, 191, 36, 0.3) 70%, transparent 90%)',
+                    transform: `scale(${1 + (age / 100)})`
+                  }}
+                ></div>
+              </div>
+            );
+          }
           if (effect.type === 'thunderSlash') {
             return (
               <div
@@ -1985,8 +2059,8 @@ const AutoBattleRPG = () => {
                 style={{ 
                   left: `${effect.x - 25}px`, 
                   top: `${effect.y - 2}px`,
-                  opacity: Math.max(0, 1 - (age / 250)), // Even faster fade for electric effects
-                  transform: `rotate(${effect.rotation}deg) scale(${1 + (age / 250)})`,
+                  opacity: Math.max(0, 1 - (age / 600)), // Much longer duration: 600ms
+                  transform: `rotate(${effect.rotation}deg) scale(${1 + (age / 600)})`,
                 }}
               >
                 {/* Blue slash line */}
