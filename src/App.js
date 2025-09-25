@@ -1739,12 +1739,12 @@ const AutoBattleRPG = () => {
         transition: 'transform 50ms ease-out'
       }}>
         <div 
-          className={`absolute w-16 h-16 flex items-center justify-center z-10 shadow-lg border-4 border-blue-300 transition-all duration-75 ${
+          className={`absolute w-20 h-20 flex items-center justify-center z-10 shadow-lg transition-all duration-75 ${
             showTutorial && tutorialSteps[tutorialStep]?.highlight === 'character' ? 'ring-4 ring-yellow-400' : ''
           }`}
           style={{ 
-            left: `${gameState.character.x - 32}px`, 
-            top: `${gameState.character.y - 32}px`,
+            left: `${gameState.character.x - 40}px`, 
+            top: `${gameState.character.y - 40}px`,
             transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)',
             backgroundImage: 'url("/Character_tanjiro.png")',
             backgroundSize: 'cover',
@@ -1763,10 +1763,10 @@ const AutoBattleRPG = () => {
           {/* Sword Slash Animation */}
           {gameState.character.isAttacking && (
             <div 
-              className="absolute w-20 h-20 pointer-events-none z-20 animate-pulse"
+              className="absolute w-24 h-24 pointer-events-none z-20 animate-pulse"
               style={{
-                left: '-10px',
-                top: '-10px',
+                left: '-12px',
+                top: '-12px',
                 borderRadius: '50%',
                 background: 'radial-gradient(circle, rgba(251, 191, 36, 0.6) 0%, rgba(245, 158, 11, 0.4) 50%, transparent 70%)',
                 transform: 'scale(1.2)',
@@ -2233,4 +2233,3 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
-
