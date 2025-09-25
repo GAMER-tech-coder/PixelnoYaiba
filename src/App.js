@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Zap, Target, Flame, Rocket, Sword, Shield, Heart, Star } from 'lucide-react';
+import './App.css';
 
 const AutoBattleRPG = () => {
   const [gameState, setGameState] = useState({
@@ -2149,3 +2150,4 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
+
