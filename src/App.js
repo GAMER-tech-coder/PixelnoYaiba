@@ -1147,7 +1147,7 @@ const AutoBattleRPG = () => {
             type: 'explosion',
             x: target.x + (Math.random() - 0.5) * 20,
             y: target.y + (Math.random() - 0.5) * 20,
-            text: '🔥',
+            text: '💥',
             color: 'text-red-500'
           });
           
@@ -1241,6 +1241,17 @@ const AutoBattleRPG = () => {
             y: target.y,
             text: '⚡',
             color: 'text-blue-400'
+          });
+          
+          // Add thunder slash effect
+          const thunderSlashRotation = Math.random() * 360;
+          addEffect({
+            type: 'thunderSlash',
+            x: target.x,
+            y: target.y,
+            text: '⚡',
+            color: 'text-blue-400',
+            rotation: thunderSlashRotation
           });
           
           // Add thunder warning effect
@@ -1959,6 +1970,43 @@ const AutoBattleRPG = () => {
                   style={{
                     boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
                     borderRadius: '2px'
+                  }}
+                ></div>
+              </div>
+            );
+          }
+          
+          // Special rendering for thunder slash effects
+          if (effect.type === 'thunderSlash') {
+            return (
+              <div
+                key={effect.id}
+                className="absolute pointer-events-none z-25"
+                style={{ 
+                  left: `${effect.x - 25}px`, 
+                  top: `${effect.y - 2}px`,
+                  opacity: Math.max(0, 1 - (age / 250)), // Even faster fade for electric effects
+                  transform: `rotate(${effect.rotation}deg) scale(${1 + (age / 250)})`,
+                }}
+              >
+                {/* Blue slash line */}
+                <div 
+                  className="absolute w-12 h-0.5"
+                  style={{
+                    background: 'linear-gradient(90deg, #3b82f6, #eab308, #3b82f6)',
+                    boxShadow: '0 0 12px rgba(59, 130, 246, 0.8), 0 0 6px rgba(234, 179, 8, 0.6)',
+                    borderRadius: '2px'
+                  }}
+                ></div>
+                {/* Yellow slash line offset */}
+                <div 
+                  className="absolute w-8 h-0.5"
+                  style={{
+                    background: '#eab308',
+                    boxShadow: '0 0 8px rgba(234, 179, 8, 0.9)',
+                    borderRadius: '2px',
+                    left: '8px',
+                    top: '1px'
                   }}
                 ></div>
               </div>
