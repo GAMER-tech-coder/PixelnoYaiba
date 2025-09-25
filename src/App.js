@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Zap, Target, Flame, Rocket, Sword, Shield, Heart, Star } from 'lucide-react';
-import './App.css';
 
 const AutoBattleRPG = () => {
   const [gameState, setGameState] = useState({
@@ -1695,16 +1694,19 @@ const AutoBattleRPG = () => {
       
       <div className="relative h-screen border-4 border-gray-700">
         <div 
-          className={`absolute w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center z-10 shadow-lg border-4 border-blue-300 transition-all duration-75 ${
+          className={`absolute w-16 h-16 flex items-center justify-center z-10 shadow-lg border-4 border-blue-300 transition-all duration-75 ${
             showTutorial && tutorialSteps[tutorialStep]?.highlight === 'character' ? 'ring-4 ring-yellow-400' : ''
           }`}
           style={{ 
             left: `${gameState.character.x - 32}px`, 
             top: `${gameState.character.y - 32}px`,
-            transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)'
+            transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)',
+            backgroundImage: 'url("/Character_tanjiro.png")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
           }}
         >
-          <Sword className="w-8 h-8 text-white" />
           <div 
             className="absolute border border-blue-300 border-opacity-30 rounded-full -z-10"
             style={{ 
