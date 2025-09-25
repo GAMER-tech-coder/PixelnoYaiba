@@ -1746,7 +1746,7 @@ const AutoBattleRPG = () => {
             left: `${gameState.character.x - 32}px`, 
             top: `${gameState.character.y - 32}px`,
             transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)',
-            backgroundImage: 'url("/character_tanjiro.png")',
+            backgroundImage: 'url("/Character_tanjiro.png")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
@@ -2233,3 +2233,4 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
+
