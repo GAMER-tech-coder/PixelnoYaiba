@@ -1445,84 +1445,84 @@ const AutoBattleRPG = () => {
     setGameOver(false);
   };
 
-  // Tutorial modal styling with fixes applied
+  // Tutorial modal styling with smaller size
   const tutorialModalStyle = {
     position: 'fixed',
-    top: '60%', // Moved lower
+    top: '50%', // Centered vertically since it's smaller now
     left: '50%',
     transform: 'translate(-50%, -50%)',
     backgroundImage: 'url(/tutorialui.png)',
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
-    width: '800px',
-    height: '500px',
+    width: '600px', // Reduced from 800px
+    height: '400px', // Reduced from 500px
     zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '60px 80px 80px 80px', // More padding to keep content within parchment
+    padding: '40px 60px 60px 60px', // Adjusted padding for smaller size
     boxSizing: 'border-box'
   };
 
   const tutorialStepStyle = {
     color: '#4A90E2',
-    fontSize: '14px',
+    fontSize: '12px', // Reduced from 14px
     fontWeight: 'bold',
-    marginBottom: '10px',
+    marginBottom: '8px', // Reduced from 10px
     textShadow: '1px 1px 2px white'
   };
 
   const tutorialHeadingStyle = {
     color: '#CC0000',
-    fontSize: '36px', // Bigger heading
+    fontSize: '28px', // Reduced from 36px
     fontWeight: 'bold',
-    marginBottom: '20px',
+    marginBottom: '15px', // Reduced from 20px
     textAlign: 'center',
-    WebkitTextStroke: '0.5px black', // Thinner stroke so red shows through
+    WebkitTextStroke: '0.5px black',
     textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
   };
 
   const tutorialContentStyle = {
     color: 'black',
-    fontSize: '15px',
+    fontSize: '13px', // Reduced from 15px
     fontWeight: '500',
     textAlign: 'center',
-    lineHeight: '1.5',
-    marginBottom: '25px',
+    lineHeight: '1.4', // Reduced from 1.5
+    marginBottom: '20px', // Reduced from 25px
     textShadow: '1px 1px 2px rgba(255,255,255,0.8)',
-    maxWidth: '600px' // Constrain width to fit better
+    maxWidth: '450px' // Reduced from 600px
   };
 
   const tutorialButtonContainerStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    maxWidth: '500px', // Constrain button container width
-    marginTop: '15px'
+    maxWidth: '400px', // Reduced from 500px
+    marginTop: '10px' // Reduced from 15px
   };
 
   const tutorialSkipButtonStyle = {
-    padding: '8px 16px',
+    padding: '6px 12px', // Reduced from 8px 16px
     backgroundColor: '#6b7280',
     color: 'white',
     border: 'none',
     borderRadius: '6px',
     fontWeight: 'bold',
-    fontSize: '14px',
+    fontSize: '12px', // Reduced from 14px
     cursor: 'pointer',
     transition: 'background-color 0.2s'
   };
 
   const tutorialNextButtonStyle = {
-    padding: '8px 16px',
+    padding: '6px 12px', // Reduced from 8px 16px
     backgroundColor: '#10b981',
     color: 'white',
     border: 'none',
     borderRadius: '6px',
     fontWeight: 'bold',
-    fontSize: '14px',
+    fontSize: '12px', // Reduced from 14px
     cursor: 'pointer',
     transition: 'background-color 0.2s'
   };
@@ -2156,11 +2156,11 @@ const AutoBattleRPG = () => {
               </button>
             </div>
 
-            <div className="flex justify-center mt-4 space-x-2">
+            <div className="flex justify-center mt-3 space-x-1">
               {tutorialSteps.map((_, index) => (
                 <div 
                   key={index}
-                  className={`w-2 h-2 rounded-full transition-all ${
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${
                     index === tutorialStep ? 'bg-yellow-400' : 'bg-gray-600'
                   }`}
                 />
