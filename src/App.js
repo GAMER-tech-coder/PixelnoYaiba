@@ -154,7 +154,7 @@ const AutoBattleRPG = () => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
-  const [showStarterSelect, setShowStarterSelect] = useState(true); // Initial character selection
+  const [showStarterSelect, setShowStarterSelect] = useState(true);
   const [hasSelectedStarter, setHasSelectedStarter] = useState(false);
   const [tutorialShown, setTutorialShown] = useState(false);
   const [unlockedCharacters, setUnlockedCharacters] = useState([]);
@@ -162,63 +162,27 @@ const AutoBattleRPG = () => {
   const tutorialSteps = [
     {
       title: "Welcome to PixelnoYaiba!",
-      content: "An epic auto-battle RPG where you fight waves of enemies! Let's learn how to play this amazing game.",
-      highlight: null,
-      position: "center"
+      content: "An epic auto-battle RPG where you fight waves of enemies!\n\nLet's learn how to play this amazing game."
     },
     {
-      title: "Your Character",
-      content: "This blue circle with a sword is you! The faint blue circle around you shows your attack range - enemies within this range will be automatically attacked.",
-      highlight: "character",
-      position: "center"
+      title: "Combat Basics",
+      content: "Your character fights automatically!\n\nWatch as they battle demons and gain experience.\n\nYour goal is to survive as many waves as possible."
     },
     {
-      title: "Movement Controls",
-      content: "Use WASD keys or Arrow Keys to move around the battlefield. Position yourself strategically to avoid enemies and stay within attack range!",
-      highlight: "controls",
-      position: "bottom-left"
+      title: "Leveling & Stats",
+      content: "Gain EXP to level up and increase your stats!\n\nHigher levels mean more HP, damage, and survival power.\n\nChoose your character wisely for different playstyles."
     },
     {
-      title: "Health System",
-      content: "Your red health bar shows your current health. When enemies touch you, you take damage. If your health reaches 0, it's game over! Keep moving to survive!",
-      highlight: "health",
-      position: "top-left"
-    },
-    {
-      title: "Experience & Leveling",
-      content: "Kill enemies to gain XP (experience points). When the XP bar fills up, you level up! Each level increases your damage (+5), health (+20), and attack speed.",
-      highlight: "xp",
-      position: "top-left"
-    },
-    {
-      title: "Wave System",
-      content: "Enemies come in waves. Clear all enemies in a wave to advance to the next one. Each wave gets progressively harder with more and stronger enemies!",
-      highlight: "wave",
-      position: "top-center"
+      title: "Currency System",
+      content: "Earn coins by defeating enemies!\n\nUse coins to unlock powerful Hashira characters.\n\nEach character has unique abilities and stats."
     },
     {
       title: "Boss Battles",
-      content: "Every 3rd wave brings a powerful Moon-ranked boss! These enemies have special abilities, more health, and require strategic positioning to defeat.",
-      highlight: "wave",
-      position: "top-center"
+      content: "Face challenging Moon-rank bosses!\n\nLower Moons appear every 5 waves.\n\nUpper Moons are the ultimate challenge!"
     },
     {
-      title: "Abilities & Power-ups",
-      content: "When you level up, choose from 3 random abilities to enhance your power! Each ability can be upgraded multiple times. Build your perfect warrior!",
-      highlight: "abilities",
-      position: "top-left"
-    },
-    {
-      title: "Auto Combat System",
-      content: "Your character automatically attacks the closest enemies within your attack range. No clicking required - just focus on positioning and survival strategy!",
-      highlight: "character",
-      position: "center"
-    },
-    {
-      title: "Ready for Battle!",
-      content: "You're ready to begin your epic journey! Click the Start button to begin fighting waves of monsters. May your blade stay sharp, warrior!",
-      highlight: "start-button",
-      position: "bottom-left"
+      title: "Ready to Fight!",
+      content: "You're ready to begin your demon-slaying journey!\n\nGood luck, and may you survive many waves!\n\nTime to start your adventure!"
     }
   ];
 
@@ -500,11 +464,10 @@ const AutoBattleRPG = () => {
 
   const selectStarterCharacter = useCallback((characterId) => {
     applyCharacterStats(characterId);
-    setUnlockedCharacters([characterId]); // Only this starter is available
+    setUnlockedCharacters([characterId]);
     setHasSelectedStarter(true);
     setShowStarterSelect(false);
     
-    // Auto-start tutorial if not shown before
     if (!tutorialShown) {
       setShowTutorial(true);
       setTutorialShown(true);
@@ -532,7 +495,6 @@ const AutoBattleRPG = () => {
       newState.bosses = newState.bosses.map(boss => {
         const now = newState.gameTime;
         
-        // Regular projectile attack
         if (now - boss.lastAttackTime > boss.attackCooldown) {
           const dx = newState.character.x - boss.x;
           const dy = newState.character.y - boss.y;
@@ -715,7 +677,6 @@ const AutoBattleRPG = () => {
               color: 'text-red-500'
             });
             
-            // Add slash effect on enemy
             const slashRotation = Math.random() * 360;
             addEffect({
               type: 'slash',
@@ -770,7 +731,6 @@ const AutoBattleRPG = () => {
               color: 'text-red-500'
             });
             
-            // Add slash effect on boss
             const slashRotation = Math.random() * 360;
             addEffect({
               type: 'slash',
@@ -1436,7 +1396,7 @@ const AutoBattleRPG = () => {
   };
 
   const resetGame = () => {
-    if (!hasSelectedStarter) return; // Can't reset without starter selection
+    if (!hasSelectedStarter) return;
     
     const selectedChar = characterData[gameState.selectedCharacter];
     
@@ -1480,10 +1440,91 @@ const AutoBattleRPG = () => {
       effects: [],
       gameTime: 0,
       keys: {}
-      // Currency and unlocked characters persist across resets
     }));
     setIsPlaying(false);
     setGameOver(false);
+  };
+
+  // Tutorial modal styling with fixes applied
+  const tutorialModalStyle = {
+    position: 'fixed',
+    top: '60%', // Moved lower
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundImage: 'url(/tutorialui.png)',
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    width: '800px',
+    height: '500px',
+    zIndex: 1000,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 80px 80px 80px', // More padding to keep content within parchment
+    boxSizing: 'border-box'
+  };
+
+  const tutorialStepStyle = {
+    color: '#4A90E2',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+    textShadow: '1px 1px 2px white'
+  };
+
+  const tutorialHeadingStyle = {
+    color: '#CC0000',
+    fontSize: '36px', // Bigger heading
+    fontWeight: 'bold',
+    marginBottom: '20px',
+    textAlign: 'center',
+    WebkitTextStroke: '0.5px black', // Thinner stroke so red shows through
+    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+  };
+
+  const tutorialContentStyle = {
+    color: 'black',
+    fontSize: '15px',
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: '1.5',
+    marginBottom: '25px',
+    textShadow: '1px 1px 2px rgba(255,255,255,0.8)',
+    maxWidth: '600px' // Constrain width to fit better
+  };
+
+  const tutorialButtonContainerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: '500px', // Constrain button container width
+    marginTop: '15px'
+  };
+
+  const tutorialSkipButtonStyle = {
+    padding: '8px 16px',
+    backgroundColor: '#6b7280',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
+  };
+
+  const tutorialNextButtonStyle = {
+    padding: '8px 16px',
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
   };
 
   return (
@@ -1513,9 +1554,7 @@ const AutoBattleRPG = () => {
         animation: screenShake ? 'shake 300ms ease-in-out' : 'none'
       }}>
         <div 
-          className={`absolute w-20 h-20 flex items-center justify-center z-10 shadow-lg transition-all duration-75 ${
-            showTutorial && tutorialSteps[tutorialStep]?.highlight === 'character' ? 'ring-4 ring-yellow-400' : ''
-          }`}
+          className="absolute w-20 h-20 flex items-center justify-center z-10 shadow-lg transition-all duration-75"
           style={{ 
             left: `${gameState.character.x - 40}px`, 
             top: `${gameState.character.y - 40}px`,
@@ -1620,22 +1659,6 @@ const AutoBattleRPG = () => {
               {boss.name}
             </div>
             
-            {(boss.isInvisible || boss.hasIronSkin || boss.hasBloodFrenzy) && (
-              <div
-                className="absolute text-xs font-bold text-purple-300 bg-black bg-opacity-90 px-1 py-0.5 rounded whitespace-nowrap"
-                style={{ 
-                  left: `${boss.x - boss.size}px`, 
-                  top: `${boss.y - boss.size - 50}px`,
-                  transform: 'translateX(-50%)',
-                  marginLeft: `${boss.size}px`
-                }}
-              >
-                {boss.isInvisible && '👻 SHADOW'}
-                {boss.hasIronSkin && '🛡️ IRON SKIN'}
-                {boss.hasBloodFrenzy && '🩸 FRENZY'}
-              </div>
-            )}
-            
             <div 
               className="absolute bg-gray-800 rounded border border-red-500"
               style={{ 
@@ -1692,7 +1715,6 @@ const AutoBattleRPG = () => {
           const scale = 1 + (fadeProgress * 0.3);
           const opacity = Math.max(0, 1 - fadeProgress);
           
-          // Special rendering for slash effects
           if (effect.type === 'slash') {
             return (
               <div
@@ -1716,7 +1738,6 @@ const AutoBattleRPG = () => {
             );
           }
           
-          // Special rendering for fireball burst effects
           if (effect.type === 'fireballBurst') {
             return (
               <div
@@ -1740,7 +1761,6 @@ const AutoBattleRPG = () => {
             );
           }
           
-          // Special rendering for rocket burst effects
           if (effect.type === 'rocketBurst') {
             return (
               <div
@@ -1760,20 +1780,10 @@ const AutoBattleRPG = () => {
                     boxShadow: '0 0 25px rgba(249, 115, 22, 0.8), 0 0 40px rgba(234, 179, 8, 0.4)'
                   }}
                 ></div>
-                <div 
-                  className="absolute w-24 h-24 rounded-full"
-                  style={{
-                    left: '-10px',
-                    top: '-10px',
-                    background: 'radial-gradient(circle, transparent 60%, rgba(251, 191, 36, 0.3) 70%, transparent 90%)',
-                    transform: `scale(${1 + (age / 100)})`
-                  }}
-                ></div>
               </div>
             );
           }
           
-          // Special rendering for thunder slash effects
           if (effect.type === 'thunderSlash') {
             return (
               <div
@@ -1792,16 +1802,6 @@ const AutoBattleRPG = () => {
                     background: 'linear-gradient(90deg, #3b82f6, #eab308, #3b82f6)',
                     boxShadow: '0 0 12px rgba(59, 130, 246, 0.8), 0 0 6px rgba(234, 179, 8, 0.6)',
                     borderRadius: '2px'
-                  }}
-                ></div>
-                <div 
-                  className="absolute w-8 h-0.5"
-                  style={{
-                    background: '#eab308',
-                    boxShadow: '0 0 8px rgba(234, 179, 8, 0.9)',
-                    borderRadius: '2px',
-                    left: '8px',
-                    top: '1px'
                   }}
                 ></div>
               </div>
@@ -1855,9 +1855,7 @@ const AutoBattleRPG = () => {
 
       <div className="absolute top-0 left-0 right-0 p-4">
         <div className="flex justify-between items-start">
-          <div className={`bg-black bg-opacity-30 border border-gray-400 rounded px-4 py-3 space-y-2 ${
-            showTutorial && (tutorialSteps[tutorialStep]?.highlight === 'xp' || tutorialSteps[tutorialStep]?.highlight === 'health' || tutorialSteps[tutorialStep]?.highlight === 'wave') ? 'ring-2 ring-yellow-400' : ''
-          }`}>
+          <div className="bg-black bg-opacity-30 border border-gray-400 rounded px-4 py-3 space-y-2">
             <div className="flex items-center space-x-4">
               <div className="text-xl font-bold">Level {gameState.character.level}</div>
               <div className="text-sm">
@@ -1883,7 +1881,7 @@ const AutoBattleRPG = () => {
               <span className="text-sm">{gameState.character.health}/{gameState.character.maxHealth}</span>
             </div>
             <div className="text-sm">
-              Damage: {Math.round(gameState.character.damage)} {gameState.character.cursedDamage && <span className="text-purple-400">💀 CURSED</span>} | 
+              Damage: {Math.round(gameState.character.damage)} | 
               Attack Speed: {(1000 / gameState.character.attackSpeed).toFixed(1)}/s |
               Move Speed: {gameState.character.speed} |
               Range: {gameState.character.attackRange}
@@ -1903,9 +1901,7 @@ const AutoBattleRPG = () => {
         </div>
 
         {Object.entries(gameState.abilities).some(([key, level]) => level > 0) && (
-          <div className={`mt-4 bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-2 inline-block ${
-            showTutorial && tutorialSteps[tutorialStep]?.highlight === 'abilities' ? 'ring-2 ring-yellow-400' : ''
-          }`}>
+          <div className="mt-4 bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-2 inline-block">
             <div className="text-sm font-semibold mb-2">Active Abilities:</div>
             <div className="space-y-1">
               {Object.entries(gameState.abilities).map(([key, level]) => {
@@ -1925,9 +1921,7 @@ const AutoBattleRPG = () => {
       </div>
 
       <div className="absolute bottom-4 left-4 space-y-2">
-        <div className={`text-sm bg-black bg-opacity-50 p-2 rounded ${
-          showTutorial && tutorialSteps[tutorialStep]?.highlight === 'controls' ? 'ring-2 ring-yellow-400' : ''
-        }`}>
+        <div className="text-sm bg-black bg-opacity-50 p-2 rounded">
           Move: WASD / Arrow Keys
         </div>
         <div className="space-x-2" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.05em' }}>
@@ -1939,8 +1933,6 @@ const AutoBattleRPG = () => {
                 : isPlaying 
                   ? 'bg-red-600 hover:bg-red-700' 
                   : 'bg-green-600 hover:bg-green-700'
-            } ${
-              showTutorial && tutorialSteps[tutorialStep]?.highlight === 'start-button' ? 'ring-4 ring-yellow-400' : ''
             }`}
           >
             {gameOver ? 'Restart' : isPlaying ? 'Pause' : 'Start'}
@@ -1991,7 +1983,7 @@ const AutoBattleRPG = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {Object.entries(characterData)
-                .filter(([id, char]) => char.cost === 0) // Only show free starter characters
+                .filter(([id, char]) => char.cost === 0)
                 .map(([id, char]) => (
                   <div
                     key={id}
@@ -2046,7 +2038,7 @@ const AutoBattleRPG = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(characterData)
-                .filter(([id, char]) => hasSelectedStarter ? char.cost > 0 : false) // Only show paid characters after starter selection
+                .filter(([id, char]) => hasSelectedStarter ? char.cost > 0 : false)
                 .map(([id, char]) => {
                 const isUnlocked = unlockedCharacters.includes(id);
                 const isSelected = gameState.selectedCharacter === id;
@@ -2134,93 +2126,45 @@ const AutoBattleRPG = () => {
 
       {showTutorial && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div 
-            className={tutorialSteps[tutorialStep].position === 'top-left' ? 'absolute top-20 left-4' : 
-              tutorialSteps[tutorialStep].position === 'bottom-left' ? 'absolute bottom-20 left-4' : 
-              tutorialSteps[tutorialStep].position === 'top-center' ? 'absolute top-20 left-1/2 transform -translate-x-1/2' :
-              'relative'}
-            style={{
-              backgroundImage: 'url("/tutorialui.png")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              width: '672px',
-              height: '500px',
-              border: '0 !important',
-              outline: '0 !important',
-              boxShadow: 'none !important',
-              margin: '0',
-              padding: '0',
-              position: tutorialSteps[tutorialStep].position === 'top-left' ? 'absolute' : 
-                tutorialSteps[tutorialStep].position === 'bottom-left' ? 'absolute' : 
-                tutorialSteps[tutorialStep].position === 'top-center' ? 'absolute' : 'relative',
-              top: tutorialSteps[tutorialStep].position === 'top-left' ? '80px' : 
-                tutorialSteps[tutorialStep].position === 'top-center' ? '80px' : 'auto',
-              bottom: tutorialSteps[tutorialStep].position === 'bottom-left' ? '80px' : 'auto',
-              left: tutorialSteps[tutorialStep].position === 'top-left' || tutorialSteps[tutorialStep].position === 'bottom-left' ? '16px' : 
-                tutorialSteps[tutorialStep].position === 'top-center' ? '50%' : 'auto',
-              transform: tutorialSteps[tutorialStep].position === 'top-center' ? 'translateX(-50%)' : 'none',
-              boxSizing: 'border-box',
-              borderRadius: '0 !important',
-              WebkitBoxShadow: 'none !important',
-              MozBoxShadow: 'none !important'
-            }}
-          >
-            <div className="p-8 relative z-10">
-              <div className="text-center mb-6">
-                <div className="text-lg font-bold text-blue-600 mb-2" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                  Step {tutorialStep + 1} of {tutorialSteps.length}
+          <div style={tutorialModalStyle}>
+            <div style={tutorialStepStyle}>
+              Step {tutorialStep + 1} of {tutorialSteps.length}
+            </div>
+            <h2 style={tutorialHeadingStyle}>{tutorialSteps[tutorialStep].title}</h2>
+            
+            {/* Break content into paragraphs */}
+            <div style={tutorialContentStyle}>
+              {tutorialSteps[tutorialStep].content.split('\n').map((paragraph, index) => (
+                <div key={index} style={{marginBottom: '10px'}}>
+                  {paragraph}
                 </div>
-                <h2 className="text-2xl font-bold text-red-600 mb-3" style={{ 
-                  WebkitTextStroke: '1px black',
-                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
-                }}>
-                  {tutorialSteps[tutorialStep].title}
-                </h2>
-                <p className="text-black text-base leading-relaxed font-medium" style={{ 
-                  textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8)'
-                }}>
-                  {tutorialSteps[tutorialStep].content}
-                </p>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <button 
-                  onClick={skipTutorial}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold text-sm transition-all"
-                >
-                  Skip Tutorial
-                </button>
-                
-                <div className="flex space-x-2">
-                  {tutorialStep > 0 && (
-                    <button 
-                      onClick={() => setTutorialStep(tutorialStep - 1)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-sm transition-all"
-                    >
-                      Previous
-                    </button>
-                  )}
-                  
-                  <button 
-                    onClick={nextTutorialStep}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-sm transition-all"
-                  >
-                    {tutorialStep === tutorialSteps.length - 1 ? 'Start Playing!' : 'Next'}
-                  </button>
-                </div>
-              </div>
+              ))}
+            </div>
+            
+            <div style={tutorialButtonContainerStyle}>
+              <button 
+                onClick={skipTutorial} 
+                style={tutorialSkipButtonStyle}
+              >
+                Skip Tutorial
+              </button>
+              <button 
+                onClick={nextTutorialStep} 
+                style={tutorialNextButtonStyle}
+              >
+                {tutorialStep === tutorialSteps.length - 1 ? 'Start Game!' : 'Next'}
+              </button>
+            </div>
 
-              <div className="flex justify-center mt-4 space-x-2">
-                {tutorialSteps.map((_, index) => (
-                  <div 
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      index === tutorialStep ? 'bg-yellow-400' : 'bg-gray-600'
-                    }`}
-                  />
-                ))}
-              </div>
+            <div className="flex justify-center mt-4 space-x-2">
+              {tutorialSteps.map((_, index) => (
+                <div 
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === tutorialStep ? 'bg-yellow-400' : 'bg-gray-600'
+                  }`}
+                />
+              ))}
             </div>
           </div>
         </div>
