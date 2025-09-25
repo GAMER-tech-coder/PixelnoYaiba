@@ -1468,17 +1468,17 @@ const AutoBattleRPG = () => {
 
   const tutorialStepStyle = {
     color: '#4A90E2',
-    fontSize: '12px', // Reduced from 14px
+    fontSize: '10px', // Reduced from 12px
     fontWeight: 'bold',
-    marginBottom: '8px', // Reduced from 10px
+    marginBottom: '6px', // Reduced from 8px
     textShadow: '1px 1px 2px white'
   };
 
   const tutorialHeadingStyle = {
     color: '#CC0000',
-    fontSize: '28px', // Reduced from 36px
+    fontSize: '22px', // Reduced from 28px
     fontWeight: 'bold',
-    marginBottom: '15px', // Reduced from 20px
+    marginBottom: '12px', // Reduced from 15px
     textAlign: 'center',
     WebkitTextStroke: '0.5px black',
     textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
@@ -1486,43 +1486,43 @@ const AutoBattleRPG = () => {
 
   const tutorialContentStyle = {
     color: 'black',
-    fontSize: '13px', // Reduced from 15px
+    fontSize: '11px', // Reduced from 13px
     fontWeight: '500',
     textAlign: 'center',
-    lineHeight: '1.4', // Reduced from 1.5
-    marginBottom: '20px', // Reduced from 25px
+    lineHeight: '1.3', // Reduced from 1.4
+    marginBottom: '15px', // Reduced from 20px
     textShadow: '1px 1px 2px rgba(255,255,255,0.8)',
-    maxWidth: '450px' // Reduced from 600px
+    maxWidth: '350px' // Reduced from 450px
   };
 
   const tutorialButtonContainerStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
-    maxWidth: '400px', // Reduced from 500px
-    marginTop: '10px' // Reduced from 15px
+    maxWidth: '300px', // Reduced from 400px
+    marginTop: '8px' // Reduced from 10px
   };
 
   const tutorialSkipButtonStyle = {
-    padding: '6px 12px', // Reduced from 8px 16px
+    padding: '4px 8px', // Reduced from 6px 12px
     backgroundColor: '#6b7280',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '4px', // Reduced from 6px
     fontWeight: 'bold',
-    fontSize: '12px', // Reduced from 14px
+    fontSize: '10px', // Reduced from 12px
     cursor: 'pointer',
     transition: 'background-color 0.2s'
   };
 
   const tutorialNextButtonStyle = {
-    padding: '6px 12px', // Reduced from 8px 16px
+    padding: '4px 8px', // Reduced from 6px 12px
     backgroundColor: '#10b981',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '4px', // Reduced from 6px
     fontWeight: 'bold',
-    fontSize: '12px', // Reduced from 14px
+    fontSize: '10px', // Reduced from 12px
     cursor: 'pointer',
     transition: 'background-color 0.2s'
   };
