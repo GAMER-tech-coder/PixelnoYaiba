@@ -1468,9 +1468,9 @@ const AutoBattleRPG = () => {
 
   const tutorialStepStyle = {
     color: '#4A90E2',
-    fontSize: '10px', // Reduced from 12px
+    fontSize: '14px', // Increased from 10px
     fontWeight: 'bold',
-    marginBottom: '6px', // Reduced from 8px
+    marginBottom: '8px', // Slightly increased from 6px
     textShadow: '1px 1px 2px white'
   };
 
