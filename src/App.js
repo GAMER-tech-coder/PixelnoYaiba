@@ -1477,7 +1477,7 @@ const AutoBattleRPG = () => {
               
               // Screen shake on damage
               setScreenShake(true);
-              setTimeout(() => setScreenShake(false), 150);
+              setTimeout(() => setScreenShake(false), 300);
               
               if (newState.character.health <= 0) {
                 newState.character.health = 0;
@@ -1509,7 +1509,7 @@ const AutoBattleRPG = () => {
               
               // Screen shake on damage
               setScreenShake(true);
-              setTimeout(() => setScreenShake(false), 150);
+              setTimeout(() => setScreenShake(false), 300);
               
               if (newState.character.health <= 0) {
                 newState.character.health = 0;
@@ -1537,7 +1537,7 @@ const AutoBattleRPG = () => {
               
               // Screen shake on damage
               setScreenShake(true);
-              setTimeout(() => setScreenShake(false), 150);
+              setTimeout(() => setScreenShake(false), 300);
               
               if (newState.character.health <= 0) {
                 newState.character.health = 0;
@@ -1735,8 +1735,9 @@ const AutoBattleRPG = () => {
       </div>
       
       <div className={`relative h-screen border-4 border-gray-700 ${screenShake ? 'animate-pulse' : ''}`} style={{ 
-        transform: screenShake ? 'translate(2px, 1px)' : 'none',
-        transition: 'transform 50ms ease-out'
+        transform: screenShake ? `translate(${Math.random() > 0.5 ? '6px' : '-6px'}, ${Math.random() > 0.5 ? '4px' : '-4px'})` : 'none',
+        transition: screenShake ? 'none' : 'transform 100ms ease-out',
+        animation: screenShake ? 'shake 300ms ease-in-out' : 'none'
       }}>
         <div 
           className={`absolute w-20 h-20 flex items-center justify-center z-10 shadow-lg transition-all duration-75 ${
@@ -1746,7 +1747,7 @@ const AutoBattleRPG = () => {
             left: `${gameState.character.x - 40}px`, 
             top: `${gameState.character.y - 40}px`,
             transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)',
-            backgroundImage: 'url("/Character_tanjiro.png")',
+            backgroundImage: 'url("/character_tanjiro.png")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
@@ -1762,26 +1763,57 @@ const AutoBattleRPG = () => {
           
           {/* Sword Slash Animation */}
           {gameState.character.isAttacking && (
-            <div 
-              className="absolute w-24 h-24 pointer-events-none z-20 animate-pulse"
-              style={{
-                left: '-12px',
-                top: '-12px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(251, 191, 36, 0.6) 0%, rgba(245, 158, 11, 0.4) 50%, transparent 70%)',
-                transform: 'scale(1.2)',
-                animation: 'slash 200ms ease-out forwards'
-              }}
-            >
+            <>
+              {/* Multiple white slash marks */}
               <div 
-                className="w-full h-full"
+                className="absolute w-28 h-28 pointer-events-none z-20"
                 style={{
-                  background: 'conic-gradient(from 0deg, transparent 250deg, rgba(251, 191, 36, 0.8) 280deg, rgba(245, 158, 11, 0.6) 300deg, transparent 330deg)',
-                  borderRadius: '50%',
-                  transform: 'rotate(45deg)'
+                  left: '-16px',
+                  top: '-16px',
                 }}
-              ></div>
-            </div>
+              >
+                {/* First slash */}
+                <div 
+                  className="absolute w-16 h-1 bg-white opacity-90"
+                  style={{
+                    left: '50%',
+                    top: '30%',
+                    transform: 'translate(-50%, -50%) rotate(45deg)',
+                    borderRadius: '2px',
+                    boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
+                    animation: 'slash1 200ms ease-out forwards'
+                  }}
+                ></div>
+                
+                {/* Second slash */}
+                <div 
+                  className="absolute w-14 h-1 bg-white opacity-80"
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%) rotate(-30deg)',
+                    borderRadius: '2px',
+                    boxShadow: '0 0 6px rgba(255, 255, 255, 0.7)',
+                    animation: 'slash2 200ms ease-out forwards',
+                    animationDelay: '50ms'
+                  }}
+                ></div>
+                
+                {/* Third slash */}
+                <div 
+                  className="absolute w-12 h-1 bg-white opacity-70"
+                  style={{
+                    left: '50%',
+                    top: '70%',
+                    transform: 'translate(-50%, -50%) rotate(15deg)',
+                    borderRadius: '2px',
+                    boxShadow: '0 0 4px rgba(255, 255, 255, 0.6)',
+                    animation: 'slash3 200ms ease-out forwards',
+                    animationDelay: '100ms'
+                  }}
+                ></div>
+              </div>
+            </>
           )}
         </div>
 
