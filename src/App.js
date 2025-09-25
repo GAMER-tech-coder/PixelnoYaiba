@@ -87,7 +87,8 @@ const AutoBattleRPG = () => {
         attackRange: 90
       },
       specialAbility: 'beastFangs',
-      description: 'Beast Breathing - High damage, close range'
+      inherentMultiStrike: 2,
+      description: 'Beast Breathing - Dual swords attack 2 enemies'
     },
     giyu: {
       name: 'Giyu Tomioka',
@@ -153,7 +154,10 @@ const AutoBattleRPG = () => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
-  const [unlockedCharacters, setUnlockedCharacters] = useState(['tanjiro', 'zenitsu', 'inosuke']);
+  const [showStarterSelect, setShowStarterSelect] = useState(true); // Initial character selection
+  const [hasSelectedStarter, setHasSelectedStarter] = useState(false);
+  const [tutorialShown, setTutorialShown] = useState(false);
+  const [unlockedCharacters, setUnlockedCharacters] = useState([]);
 
   const tutorialSteps = [
     {
@@ -494,6 +498,19 @@ const AutoBattleRPG = () => {
     return true;
   }, [gameState.currency]);
 
+  const selectStarterCharacter = useCallback((characterId) => {
+    applyCharacterStats(characterId);
+    setUnlockedCharacters([characterId]); // Only this starter is available
+    setHasSelectedStarter(true);
+    setShowStarterSelect(false);
+    
+    // Auto-start tutorial if not shown before
+    if (!tutorialShown) {
+      setShowTutorial(true);
+      setTutorialShown(true);
+    }
+  }, [applyCharacterStats, tutorialShown]);
+
   const selectCharacter = useCallback((characterId) => {
     if (!unlockedCharacters.includes(characterId)) return;
     
@@ -675,8 +692,11 @@ const AutoBattleRPG = () => {
 
       if (allTargetsInRange.length > 0) {
         const multiStrikeLevel = newState.abilities.weaponMultiplier;
+        const currentChar = characterData[newState.selectedCharacter];
+        const inherentStrikes = currentChar.inherentMultiStrike || 1;
+        
         const targetsToAttack = Math.min(
-          1 + multiStrikeLevel,
+          inherentStrikes + multiStrikeLevel,
           allTargetsInRange.length
         );
 
@@ -1416,6 +1436,8 @@ const AutoBattleRPG = () => {
   };
 
   const resetGame = () => {
+    if (!hasSelectedStarter) return; // Can't reset without starter selection
+    
     const selectedChar = characterData[gameState.selectedCharacter];
     
     setGameState(prev => ({
@@ -1458,6 +1480,7 @@ const AutoBattleRPG = () => {
       effects: [],
       gameTime: 0,
       keys: {}
+      // Currency and unlocked characters persist across resets
     }));
     setIsPlaying(false);
     setGameOver(false);
@@ -1946,16 +1969,74 @@ const AutoBattleRPG = () => {
             Tutorial
           </button>
 
-          <button 
-            onClick={() => setShowCharacterSelect(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-sm transition-all"
-          >
-            Characters
-          </button>
+          {hasSelectedStarter && (
+            <button 
+              onClick={() => setShowCharacterSelect(true)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-sm transition-all"
+            >
+              Unlock Hashira
+            </button>
+          )}
         </div>
       </div>
 
-      {showCharacterSelect && (
+      {showStarterSelect && !hasSelectedStarter && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-8 rounded-lg max-w-4xl w-full mx-4">
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold text-yellow-400 mb-4">Choose Your Starter Character</h2>
+              <p className="text-gray-300 text-lg">This choice is permanent! Choose wisely, as you cannot switch between starter characters later.</p>
+              <p className="text-gray-400 text-sm mt-2">You can unlock additional Hashira characters with currency during gameplay.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Object.entries(characterData)
+                .filter(([id, char]) => char.cost === 0) // Only show free starter characters
+                .map(([id, char]) => (
+                  <div
+                    key={id}
+                    className="p-6 rounded-lg border-2 border-blue-400 bg-gray-700 hover:bg-gray-600 transition-all cursor-pointer"
+                    onClick={() => selectStarterCharacter(id)}
+                  >
+                    <div className="text-center">
+                      <div 
+                        className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-white"
+                        style={{
+                          backgroundImage: `url("/${char.image}")`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
+                        }}
+                      ></div>
+                      
+                      <h3 className="text-xl font-bold text-white mb-3">{char.name}</h3>
+                      
+                      <div className="text-sm space-y-2 mb-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>HP: <span className="text-green-400">{char.baseStats.health}</span></div>
+                          <div>DMG: <span className="text-red-400">{char.baseStats.damage}</span></div>
+                          <div>SPD: <span className="text-blue-400">{char.baseStats.speed}</span></div>
+                          <div>RNG: <span className="text-yellow-400">{char.baseStats.attackRange}</span></div>
+                        </div>
+                        {char.inherentMultiStrike && (
+                          <div className="text-purple-400 font-semibold">Dual Strike: Attacks {char.inherentMultiStrike} enemies</div>
+                        )}
+                      </div>
+                      
+                      <p className="text-gray-300 text-sm mb-4">{char.description}</p>
+                      
+                      <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold transition-all">
+                        Choose {char.name.split(' ')[0]}
+                      </button>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCharacterSelect && hasSelectedStarter && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="text-center mb-6">
@@ -1964,7 +2045,9 @@ const AutoBattleRPG = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(characterData).map(([id, char]) => {
+              {Object.entries(characterData)
+                .filter(([id, char]) => hasSelectedStarter ? char.cost > 0 : false) // Only show paid characters after starter selection
+                .map(([id, char]) => {
                 const isUnlocked = unlockedCharacters.includes(id);
                 const isSelected = gameState.selectedCharacter === id;
                 const canAfford = gameState.currency >= char.cost;
