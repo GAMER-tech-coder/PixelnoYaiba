@@ -4,6 +4,8 @@ import './App.css';
 
 const AutoBattleRPG = () => {
   const [gameState, setGameState] = useState({
+    currency: 0,
+    selectedCharacter: 'tanjiro',
     character: {
       level: 1,
       xp: 0,
@@ -44,11 +46,114 @@ const AutoBattleRPG = () => {
     keys: {}
   });
 
+  const characterData = {
+    tanjiro: {
+      name: 'Tanjiro Kamado',
+      image: 'character_tanjiro.png',
+      cost: 0,
+      baseStats: {
+        health: 100,
+        damage: 10,
+        speed: 5,
+        attackSpeed: 1000,
+        attackRange: 120
+      },
+      specialAbility: 'waterWheel',
+      description: 'Water Breathing techniques with balanced stats'
+    },
+    zenitsu: {
+      name: 'Zenitsu Agatsuma',
+      image: 'character_zenitsu.png',
+      cost: 0,
+      baseStats: {
+        health: 75,
+        damage: 12,
+        speed: 7,
+        attackSpeed: 800,
+        attackRange: 100
+      },
+      specialAbility: 'thunderclap',
+      description: 'Thunder Breathing - High speed, lower health'
+    },
+    inosuke: {
+      name: 'Inosuke Hashibira',
+      image: 'character_inosuke.png',
+      cost: 0,
+      baseStats: {
+        health: 120,
+        damage: 14,
+        speed: 4,
+        attackSpeed: 1200,
+        attackRange: 90
+      },
+      specialAbility: 'beastFangs',
+      description: 'Beast Breathing - High damage, close range'
+    },
+    giyu: {
+      name: 'Giyu Tomioka',
+      image: 'character_giyu.png',
+      cost: 500,
+      baseStats: {
+        health: 150,
+        damage: 15,
+        speed: 6,
+        attackSpeed: 900,
+        attackRange: 140
+      },
+      specialAbility: 'deadCalm',
+      description: 'Water Hashira - Defensive specialist'
+    },
+    rengoku: {
+      name: 'Kyojuro Rengoku',
+      image: 'character_rengoku.png',
+      cost: 750,
+      baseStats: {
+        health: 130,
+        damage: 18,
+        speed: 6,
+        attackSpeed: 850,
+        attackRange: 110
+      },
+      specialAbility: 'flameSlash',
+      description: 'Flame Hashira - High damage fire attacks'
+    },
+    tengen: {
+      name: 'Tengen Uzui',
+      image: 'character_tengen.png',
+      cost: 600,
+      baseStats: {
+        health: 110,
+        damage: 16,
+        speed: 8,
+        attackSpeed: 750,
+        attackRange: 100
+      },
+      specialAbility: 'explosiveBeads',
+      description: 'Sound Hashira - Speed and explosions'
+    },
+    shinobu: {
+      name: 'Shinobu Kocho',
+      image: 'character_shinobu.png',
+      cost: 650,
+      baseStats: {
+        health: 80,
+        damage: 8,
+        speed: 9,
+        attackSpeed: 600,
+        attackRange: 130
+      },
+      specialAbility: 'poisonStrike',
+      description: 'Insect Hashira - Poison damage over time'
+    }
+  };
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
+  const [showCharacterSelect, setShowCharacterSelect] = useState(false);
+  const [unlockedCharacters, setUnlockedCharacters] = useState(['tanjiro', 'zenitsu', 'inosuke']);
 
   const tutorialSteps = [
     {
@@ -357,6 +462,45 @@ const AutoBattleRPG = () => {
     }));
   }, []);
 
+  const applyCharacterStats = useCallback((characterId) => {
+    const charData = characterData[characterId];
+    if (!charData) return;
+
+    setGameState(prev => ({
+      ...prev,
+      selectedCharacter: characterId,
+      character: {
+        ...prev.character,
+        health: charData.baseStats.health,
+        maxHealth: charData.baseStats.health,
+        damage: charData.baseStats.damage,
+        speed: charData.baseStats.speed,
+        attackSpeed: charData.baseStats.attackSpeed,
+        attackRange: charData.baseStats.attackRange
+      }
+    }));
+  }, []);
+
+  const unlockCharacter = useCallback((characterId) => {
+    const charData = characterData[characterId];
+    if (!charData || gameState.currency < charData.cost) return false;
+
+    setGameState(prev => ({
+      ...prev,
+      currency: prev.currency - charData.cost
+    }));
+    
+    setUnlockedCharacters(prev => [...prev, characterId]);
+    return true;
+  }, [gameState.currency]);
+
+  const selectCharacter = useCallback((characterId) => {
+    if (!unlockedCharacters.includes(characterId)) return;
+    
+    applyCharacterStats(characterId);
+    setShowCharacterSelect(false);
+  }, [unlockedCharacters, applyCharacterStats]);
+
   const checkCollision = (char, enemy) => {
     const dx = char.x - enemy.x;
     const dy = char.y - enemy.y;
@@ -391,452 +535,6 @@ const AutoBattleRPG = () => {
             
             newState.bossProjectiles.push(projectile);
             boss.lastAttackTime = now;
-          }
-        }
-        
-        // Special abilities
-        if (now - (boss.lastSpecialAttack || 0) > boss.specialCooldown) {
-          boss.lastSpecialAttack = now;
-          
-          if (boss.abilities.includes('bloodFrenzy')) {
-            boss.hasBloodFrenzy = true;
-            boss.bloodFrenzyUntil = now + 4000;
-            boss.speed *= 1.5;
-            boss.attackCooldown *= 0.7;
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'BLOOD FRENZY!',
-              color: 'text-red-600'
-            });
-          }
-          
-          if (boss.abilities.includes('poisonCloud')) {
-            for (let i = 0; i < 8; i++) {
-              const angle = (i / 8) * Math.PI * 2;
-              const distance = 60 + Math.random() * 40;
-              const cloudX = boss.x + Math.cos(angle) * distance;
-              const cloudY = boss.y + Math.sin(angle) * distance;
-              
-              setTimeout(() => {
-                addEffect({
-                  type: 'poison',
-                  x: cloudX,
-                  y: cloudY,
-                  text: '☠️',
-                  color: 'text-green-500'
-                });
-                
-                const dx = newState.character.x - cloudX;
-                const dy = newState.character.y - cloudY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < 40) {
-                  newState.character.health -= boss.damage * 0.5;
-                  addEffect({
-                    type: 'playerDamage',
-                    x: newState.character.x,
-                    y: newState.character.y,
-                    text: `POISONED -${Math.floor(boss.damage * 0.5)}`,
-                    color: 'text-green-600'
-                  });
-                }
-              }, i * 200);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'POISON CLOUD!',
-              color: 'text-green-400'
-            });
-          }
-          
-          if (boss.abilities.includes('shadowStep')) {
-            for (let i = 0; i < 3; i++) {
-              setTimeout(() => {
-                boss.x = 200 + Math.random() * 400;
-                boss.y = 150 + Math.random() * 300;
-                
-                const dx = newState.character.x - boss.x;
-                const dy = newState.character.y - boss.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > 0) {
-                  const projectile = {
-                    id: Date.now() + Math.random() + i,
-                    x: boss.x,
-                    y: boss.y,
-                    vx: (dx / distance) * boss.projectileSpeed * 1.2,
-                    vy: (dy / distance) * boss.projectileSpeed * 1.2,
-                    damage: boss.damage * 0.8,
-                    lifetime: 0,
-                    type: 'shadow'
-                  };
-                  
-                  newState.bossProjectiles.push(projectile);
-                }
-              }, i * 800);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'SHADOW STEP!',
-              color: 'text-indigo-400'
-            });
-          }
-          
-          if (boss.abilities.includes('crimsonBlade')) {
-            for (let i = 0; i < 5; i++) {
-              const angle = (i - 2) * 0.3;
-              const dx = newState.character.x - boss.x;
-              const dy = newState.character.y - boss.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              
-              if (distance > 0) {
-                const baseVx = (dx / distance) * boss.projectileSpeed * 1.5;
-                const baseVy = (dy / distance) * boss.projectileSpeed * 1.5;
-                
-                const rotatedVx = baseVx * Math.cos(angle) - baseVy * Math.sin(angle);
-                const rotatedVy = baseVx * Math.sin(angle) + baseVy * Math.cos(angle);
-                
-                const projectile = {
-                  id: Date.now() + Math.random() + i,
-                  x: boss.x,
-                  y: boss.y,
-                  vx: rotatedVx,
-                  vy: rotatedVy,
-                  damage: boss.damage * 1.2,
-                  lifetime: 0,
-                  type: 'crimson'
-                };
-                
-                newState.bossProjectiles.push(projectile);
-              }
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'CRIMSON BLADE!',
-              color: 'text-red-400'
-            });
-          }
-          
-          if (boss.abilities.includes('shadowClone')) {
-            boss.isInvisible = true;
-            boss.invisibleUntil = now + 2000;
-            
-            boss.x = 200 + Math.random() * 400;
-            boss.y = 150 + Math.random() * 300;
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'SHADOW CLONE!',
-              color: 'text-purple-400'
-            });
-          }
-          
-          if (boss.abilities.includes('ironSkin')) {
-            boss.hasIronSkin = true;
-            boss.ironSkinUntil = now + 4000;
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'IRON SKIN!',
-              color: 'text-gray-300'
-            });
-          }
-          
-          if (boss.abilities.includes('meteorFist')) {
-            const dx = newState.character.x - boss.x;
-            const dy = newState.character.y - boss.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0) {
-              const projectile = {
-                id: Date.now() + Math.random(),
-                x: boss.x,
-                y: boss.y,
-                vx: (dx / distance) * boss.projectileSpeed * 0.7,
-                vy: (dy / distance) * boss.projectileSpeed * 0.7,
-                damage: boss.damage * 2.5,
-                lifetime: 0,
-                type: 'meteor',
-                size: 20
-              };
-              
-              newState.bossProjectiles.push(projectile);
-              
-              addEffect({
-                type: 'bossSpecial',
-                x: boss.x,
-                y: boss.y - 40,
-                text: 'METEOR FIST!',
-                color: 'text-orange-400'
-              });
-            }
-          }
-          
-          if (boss.abilities.includes('blizzardShadows')) {
-            for (let i = 0; i < 8; i++) {
-              const angle = (i / 8) * Math.PI * 2;
-              const projectile = {
-                id: Date.now() + Math.random() + i,
-                x: boss.x + Math.cos(angle) * 60,
-                y: boss.y + Math.sin(angle) * 60,
-                vx: Math.cos(angle) * boss.projectileSpeed * 0.5,
-                vy: Math.sin(angle) * boss.projectileSpeed * 0.5,
-                damage: boss.damage * 0.8,
-                lifetime: 0,
-                type: 'blizzard',
-                homing: true
-              };
-              
-              newState.bossProjectiles.push(projectile);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'BLIZZARD SHADOWS!',
-              color: 'text-blue-300'
-            });
-          }
-          
-          if (boss.abilities.includes('deathScythe')) {
-            for (let i = 0; i < 7; i++) {
-              const baseAngle = Math.atan2(newState.character.y - boss.y, newState.character.x - boss.x);
-              const angle = baseAngle + (i - 3) * 0.2;
-              
-              const projectile = {
-                id: Date.now() + Math.random() + i,
-                x: boss.x,
-                y: boss.y,
-                vx: Math.cos(angle) * boss.projectileSpeed * 1.2,
-                vy: Math.sin(angle) * boss.projectileSpeed * 1.2,
-                damage: boss.damage * 1.3,
-                lifetime: 0,
-                type: 'scythe',
-                size: 12
-              };
-              
-              newState.bossProjectiles.push(projectile);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'DEATH SCYTHE!',
-              color: 'text-purple-400'
-            });
-          }
-          
-          if (boss.abilities.includes('hellfire')) {
-            for (let i = 0; i < 12; i++) {
-              const angle = (i / 12) * Math.PI * 2;
-              
-              setTimeout(() => {
-                const projectile = {
-                  id: Date.now() + Math.random() + i,
-                  x: boss.x + Math.cos(angle) * 80,
-                  y: boss.y + Math.sin(angle) * 80,
-                  vx: Math.cos(angle) * boss.projectileSpeed * 0.8,
-                  vy: Math.sin(angle) * boss.projectileSpeed * 0.8,
-                  damage: boss.damage * 0.9,
-                  lifetime: 0,
-                  type: 'hellfire'
-                };
-                
-                newState.bossProjectiles.push(projectile);
-              }, i * 150);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'HELLFIRE RING!',
-              color: 'text-orange-400'
-            });
-          }
-          
-          if (boss.abilities.includes('thunderWrath')) {
-            for (let i = 0; i < 6; i++) {
-              setTimeout(() => {
-                const randomX = 100 + Math.random() * 600;
-                const randomY = 100 + Math.random() * 400;
-                
-                addEffect({
-                  type: 'lightning',
-                  x: randomX,
-                  y: randomY,
-                  text: '⚡',
-                  color: 'text-yellow-300'
-                });
-                
-                const dx = newState.character.x - randomX;
-                const dy = newState.character.y - randomY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < 50) {
-                  newState.character.health -= boss.damage * 0.7;
-                  addEffect({
-                    type: 'playerDamage',
-                    x: newState.character.x,
-                    y: newState.character.y,
-                    text: `-${Math.floor(boss.damage * 0.7)}`,
-                    color: 'text-yellow-600'
-                  });
-                }
-              }, i * 300);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'THUNDER WRATH!',
-              color: 'text-yellow-400'
-            });
-          }
-          
-          if (boss.abilities.includes('infiniteSlash')) {
-            for (let wave = 0; wave < 3; wave++) {
-              setTimeout(() => {
-                for (let i = 0; i < 8; i++) {
-                  const angle = Math.random() * Math.PI * 2;
-                  const speed = boss.projectileSpeed * (0.8 + Math.random() * 0.6);
-                  
-                  const projectile = {
-                    id: Date.now() + Math.random() + wave + i,
-                    x: boss.x,
-                    y: boss.y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    damage: boss.damage * 0.7,
-                    lifetime: 0,
-                    type: 'slash'
-                  };
-                  
-                  newState.bossProjectiles.push(projectile);
-                }
-              }, wave * 400);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'INFINITE SLASH!',
-              color: 'text-pink-400'
-            });
-          }
-          
-          if (boss.abilities.includes('eternalNight')) {
-            boss.hasCursed = true;
-            boss.cursedUntil = now + 6000;
-            
-            if (!newState.character.cursedDamage) {
-              newState.character.cursedDamage = Math.floor(newState.character.damage * 0.6);
-              newState.character.originalDamage = newState.character.damage;
-              newState.character.damage = newState.character.cursedDamage;
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'ETERNAL NIGHT CURSE!',
-              color: 'text-purple-600'
-            });
-            
-            addEffect({
-              type: 'curse',
-              x: newState.character.x,
-              y: newState.character.y - 50,
-              text: 'CURSED! -40% DAMAGE',
-              color: 'text-purple-500'
-            });
-          }
-          
-          if (boss.abilities.includes('thousandStrikes')) {
-            for (let i = 0; i < 20; i++) {
-              setTimeout(() => {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = boss.projectileSpeed * (0.8 + Math.random() * 0.4);
-                
-                const projectile = {
-                  id: Date.now() + Math.random() + i,
-                  x: boss.x,
-                  y: boss.y,
-                  vx: Math.cos(angle) * speed,
-                  vy: Math.sin(angle) * speed,
-                  damage: boss.damage * 0.6,
-                  lifetime: 0,
-                  type: 'thousand'
-                };
-                
-                newState.bossProjectiles.push(projectile);
-              }, i * 100);
-            }
-            
-            addEffect({
-              type: 'bossSpecial',
-              x: boss.x,
-              y: boss.y - 40,
-              text: 'THOUSAND STRIKES!',
-              color: 'text-black'
-            });
-          }
-        }
-        
-        // Clear temporary effects
-        if (boss.invisibleUntil && now > boss.invisibleUntil) {
-          boss.isInvisible = false;
-          delete boss.invisibleUntil;
-        }
-        
-        if (boss.ironSkinUntil && now > boss.ironSkinUntil) {
-          boss.hasIronSkin = false;
-          delete boss.ironSkinUntil;
-        }
-        
-        if (boss.bloodFrenzyUntil && now > boss.bloodFrenzyUntil) {
-          boss.hasBloodFrenzy = false;
-          boss.speed /= 1.5;
-          boss.attackCooldown /= 0.7;
-          delete boss.bloodFrenzyUntil;
-        }
-        
-        if (boss.cursedUntil && now > boss.cursedUntil) {
-          boss.hasCursed = false;
-          delete boss.cursedUntil;
-          
-          if (newState.character.cursedDamage) {
-            newState.character.damage = newState.character.originalDamage;
-            delete newState.character.cursedDamage;
-            delete newState.character.originalDamage;
-            
-            addEffect({
-              type: 'curseRemoved',
-              x: newState.character.x,
-              y: newState.character.y - 50,
-              text: 'CURSE BROKEN!',
-              color: 'text-green-400'
-            });
           }
         }
         
@@ -875,7 +573,6 @@ const AutoBattleRPG = () => {
       
       const bosses = [boss];
       
-      // Multiple bosses at higher waves - spawn duplicate of same boss
       if (waveNumber >= 15 && Math.random() < 0.3) {
         const secondBoss = {
           ...boss,
@@ -999,7 +696,7 @@ const AutoBattleRPG = () => {
             });
             
             // Add slash effect on enemy
-            const slashRotation = Math.random() * 360; // Random rotation
+            const slashRotation = Math.random() * 360;
             addEffect({
               type: 'slash',
               x: enemy.x,
@@ -1012,6 +709,7 @@ const AutoBattleRPG = () => {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += enemy.xp;
+              newState.currency += Math.floor(enemy.xp / 5);
               
               addEffect({
                 type: 'kill',
@@ -1053,7 +751,7 @@ const AutoBattleRPG = () => {
             });
             
             // Add slash effect on boss
-            const slashRotation = Math.random() * 360; // Random rotation
+            const slashRotation = Math.random() * 360;
             addEffect({
               type: 'slash',
               x: boss.x,
@@ -1066,6 +764,7 @@ const AutoBattleRPG = () => {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += boss.xp;
+              newState.currency += Math.floor(boss.xp / 3);
               
               addEffect({
                 type: 'kill',
@@ -1087,7 +786,6 @@ const AutoBattleRPG = () => {
         newState.character.lastAttack = now;
         newState.character.isAttacking = true;
         
-        // Reset attack animation after 200ms
         setTimeout(() => {
           setGameState(prev => ({
             ...prev,
@@ -1142,7 +840,6 @@ const AutoBattleRPG = () => {
             color: 'text-orange-500'
           });
           
-          // Add rocket burst animation
           addEffect({
             type: 'rocketBurst',
             x: target.x,
@@ -1151,7 +848,6 @@ const AutoBattleRPG = () => {
             color: 'text-orange-500'
           });
           
-          // Add explosion effect
           addEffect({
             type: 'explosion',
             x: target.x + (Math.random() - 0.5) * 20,
@@ -1171,6 +867,7 @@ const AutoBattleRPG = () => {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += target.xp;
+              newState.currency += Math.floor(target.xp / 5);
               newState.enemies = newState.enemies.filter(e => e.id !== target.id);
             } else {
               newState.enemies = newState.enemies.map(e => 
@@ -1181,6 +878,7 @@ const AutoBattleRPG = () => {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += target.xp;
+              newState.currency += Math.floor(target.xp / 3);
               addEffect({
                 type: 'kill',
                 x: target.x,
@@ -1252,7 +950,6 @@ const AutoBattleRPG = () => {
             color: 'text-blue-400'
           });
           
-          // Add thunder slash effect
           const thunderSlashRotation = Math.random() * 360;
           addEffect({
             type: 'thunderSlash',
@@ -1263,7 +960,6 @@ const AutoBattleRPG = () => {
             rotation: thunderSlashRotation
           });
           
-          // Add thunder warning effect
           addEffect({
             type: 'thunder_warning',
             x: target.x,
@@ -1291,6 +987,7 @@ const AutoBattleRPG = () => {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += target.xp;
+              newState.currency += Math.floor(target.xp / 5);
               newState.enemies = newState.enemies.filter(e => e.id !== target.id);
             } else {
               newState.enemies = newState.enemies.map(e => 
@@ -1301,6 +998,7 @@ const AutoBattleRPG = () => {
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += target.xp;
+              newState.currency += Math.floor(target.xp / 3);
               addEffect({
                 type: 'kill',
                 x: target.x,
@@ -1363,8 +1061,8 @@ const AutoBattleRPG = () => {
         if (keys['a'] || keys['arrowleft']) newX -= character.speed;
         if (keys['d'] || keys['arrowright']) newX += character.speed;
         
-        newX = Math.max(16, Math.min(1264, newX)); // Allow full screen width
-        newY = Math.max(16, Math.min(984, newY)); // Allow full screen height
+        newX = Math.max(16, Math.min(1264, newX));
+        newY = Math.max(16, Math.min(984, newY));
         
         newState.character.x = newX;
         newState.character.y = newY;
@@ -1448,7 +1146,6 @@ const AutoBattleRPG = () => {
                   color: 'text-red-600'
                 });
                 
-                // Add fireball burst animation
                 addEffect({
                   type: 'fireballBurst',
                   x: enemy.x,
@@ -1468,6 +1165,7 @@ const AutoBattleRPG = () => {
                 if (newHealth <= 0) {
                   newState.enemiesKilled++;
                   newState.character.xp += enemy.xp;
+                  newState.currency += Math.floor(enemy.xp / 5);
                   return null;
                 }
                 return { ...enemy, currentHealth: newHealth };
@@ -1526,7 +1224,6 @@ const AutoBattleRPG = () => {
                 color: 'text-red-600'
               });
               
-              // Screen shake on damage
               setScreenShake(true);
               setTimeout(() => setScreenShake(false), 300);
               
@@ -1558,7 +1255,6 @@ const AutoBattleRPG = () => {
                 color: 'text-red-600'
               });
               
-              // Screen shake on damage
               setScreenShake(true);
               setTimeout(() => setScreenShake(false), 300);
               
@@ -1586,7 +1282,6 @@ const AutoBattleRPG = () => {
                 color: 'text-red-600'
               });
               
-              // Screen shake on damage
               setScreenShake(true);
               setTimeout(() => setScreenShake(false), 300);
               
@@ -1721,20 +1416,24 @@ const AutoBattleRPG = () => {
   };
 
   const resetGame = () => {
-    setGameState({
+    const selectedChar = characterData[gameState.selectedCharacter];
+    
+    setGameState(prev => ({
+      ...prev,
       character: {
         level: 1,
         xp: 0,
         xpToNext: 100,
-        health: 100,
-        maxHealth: 100,
-        damage: 10,
-        attackSpeed: 1000,
+        health: selectedChar.baseStats.health,
+        maxHealth: selectedChar.baseStats.health,
+        damage: selectedChar.baseStats.damage,
+        attackSpeed: selectedChar.baseStats.attackSpeed,
         lastAttack: 0,
         x: 400,
         y: 300,
-        speed: 5,
-        attackRange: 120
+        speed: selectedChar.baseStats.speed,
+        attackRange: selectedChar.baseStats.attackRange,
+        isAttacking: false
       },
       enemies: [],
       bosses: [],
@@ -1759,7 +1458,7 @@ const AutoBattleRPG = () => {
       effects: [],
       gameTime: 0,
       keys: {}
-    });
+    }));
     setIsPlaying(false);
     setGameOver(false);
   };
@@ -1798,7 +1497,7 @@ const AutoBattleRPG = () => {
             left: `${gameState.character.x - 40}px`, 
             top: `${gameState.character.y - 40}px`,
             transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)',
-            backgroundImage: 'url("/character_tanjiro.png")',
+            backgroundImage: `url("/${characterData[gameState.selectedCharacter].image}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
@@ -1979,7 +1678,7 @@ const AutoBattleRPG = () => {
                 style={{ 
                   left: `${effect.x - 20}px`, 
                   top: `${effect.y - 2}px`,
-                  opacity: Math.max(0, 1 - (age / 300)), // Faster fade for slashes
+                  opacity: Math.max(0, 1 - (age / 300)),
                   transform: `rotate(${effect.rotation}deg) scale(${1 + (age / 300)})`,
                 }}
               >
@@ -2004,7 +1703,7 @@ const AutoBattleRPG = () => {
                   left: `${effect.x - 30}px`, 
                   top: `${effect.y - 30}px`,
                   opacity: Math.max(0, 1 - (age / 400)),
-                  transform: `scale(${1 + (age / 150)})`, // Quick expansion
+                  transform: `scale(${1 + (age / 150)})`,
                 }}
               >
                 <div 
@@ -2028,7 +1727,7 @@ const AutoBattleRPG = () => {
                   left: `${effect.x - 35}px`, 
                   top: `${effect.y - 35}px`,
                   opacity: Math.max(0, 1 - (age / 450)),
-                  transform: `scale(${1 + (age / 120)})`, // Faster expansion than fireball
+                  transform: `scale(${1 + (age / 120)})`,
                 }}
               >
                 <div 
@@ -2038,7 +1737,6 @@ const AutoBattleRPG = () => {
                     boxShadow: '0 0 25px rgba(249, 115, 22, 0.8), 0 0 40px rgba(234, 179, 8, 0.4)'
                   }}
                 ></div>
-                {/* Secondary shockwave */}
                 <div 
                   className="absolute w-24 h-24 rounded-full"
                   style={{
@@ -2051,6 +1749,8 @@ const AutoBattleRPG = () => {
               </div>
             );
           }
+          
+          // Special rendering for thunder slash effects
           if (effect.type === 'thunderSlash') {
             return (
               <div
@@ -2059,11 +1759,10 @@ const AutoBattleRPG = () => {
                 style={{ 
                   left: `${effect.x - 25}px`, 
                   top: `${effect.y - 2}px`,
-                  opacity: Math.max(0, 1 - (age / 600)), // Much longer duration: 600ms
+                  opacity: Math.max(0, 1 - (age / 600)),
                   transform: `rotate(${effect.rotation}deg) scale(${1 + (age / 600)})`,
                 }}
               >
-                {/* Blue slash line */}
                 <div 
                   className="absolute w-12 h-0.5"
                   style={{
@@ -2072,7 +1771,6 @@ const AutoBattleRPG = () => {
                     borderRadius: '2px'
                   }}
                 ></div>
-                {/* Yellow slash line offset */}
                 <div 
                   className="absolute w-8 h-0.5"
                   style={{
@@ -2170,6 +1868,7 @@ const AutoBattleRPG = () => {
           </div>
 
           <div className="text-right space-y-1">
+            <div className="text-lg font-bold bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-1">Currency: {gameState.currency} 💰</div>
             <div className="text-lg font-bold bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-1">Enemies Killed: {gameState.enemiesKilled}</div>
             <div className="text-sm bg-black bg-opacity-30 border border-gray-400 rounded px-3 py-1">Active Enemies: {gameState.enemies.length + gameState.bosses.length}</div>
             {gameState.bosses.length > 0 && (
@@ -2246,26 +1945,144 @@ const AutoBattleRPG = () => {
           >
             Tutorial
           </button>
+
+          <button 
+            onClick={() => setShowCharacterSelect(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-sm transition-all"
+          >
+            Characters
+          </button>
         </div>
       </div>
 
+      {showCharacterSelect && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-yellow-400 mb-2">Select Character</h2>
+              <p className="text-gray-300">Current: {characterData[gameState.selectedCharacter].name} | Currency: {gameState.currency} 💰</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(characterData).map(([id, char]) => {
+                const isUnlocked = unlockedCharacters.includes(id);
+                const isSelected = gameState.selectedCharacter === id;
+                const canAfford = gameState.currency >= char.cost;
+                
+                return (
+                  <div
+                    key={id}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      isSelected 
+                        ? 'border-yellow-400 bg-yellow-900 bg-opacity-30' 
+                        : isUnlocked 
+                          ? 'border-green-400 bg-gray-700 hover:bg-gray-600' 
+                          : canAfford 
+                            ? 'border-blue-400 bg-gray-700 hover:bg-gray-600'
+                            : 'border-gray-600 bg-gray-800 opacity-70'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div 
+                        className="w-16 h-16 mx-auto mb-2 rounded-full"
+                        style={{
+                          backgroundImage: `url("/${char.image}")`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
+                        }}
+                      ></div>
+                      
+                      <h3 className={`font-bold mb-2 ${isSelected ? 'text-yellow-400' : 'text-white'}`}>
+                        {char.name}
+                      </h3>
+                      
+                      <div className="text-xs space-y-1 mb-3">
+                        <div>HP: {char.baseStats.health} | DMG: {char.baseStats.damage}</div>
+                        <div>SPD: {char.baseStats.speed} | RNG: {char.baseStats.attackRange}</div>
+                        <div className="text-gray-400">{char.description}</div>
+                      </div>
+                      
+                      {char.cost > 0 && (
+                        <div className={`text-sm mb-2 ${canAfford ? 'text-green-400' : 'text-red-400'}`}>
+                          Cost: {char.cost} 💰
+                        </div>
+                      )}
+                      
+                      {isSelected ? (
+                        <div className="text-yellow-400 font-bold">SELECTED</div>
+                      ) : isUnlocked ? (
+                        <button
+                          onClick={() => selectCharacter(id)}
+                          className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm transition-all"
+                        >
+                          Select
+                        </button>
+                      ) : canAfford ? (
+                        <button
+                          onClick={() => {
+                            if (unlockCharacter(id)) {
+                              selectCharacter(id);
+                            }
+                          }}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-all"
+                        >
+                          Unlock & Select
+                        </button>
+                      ) : (
+                        <div className="text-gray-500 text-sm">Insufficient Funds</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="text-center mt-6">
+              <button
+                onClick={() => setShowCharacterSelect(false)}
+                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showTutorial && (
-        <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div 
-            className={`rounded-lg max-w-md w-full mx-4 shadow-2xl border-2 border-gray-600 ${
-              tutorialSteps[tutorialStep].position === 'top-left' ? 'absolute top-20 left-4' : 
+            className={tutorialSteps[tutorialStep].position === 'top-left' ? 'absolute top-20 left-4' : 
               tutorialSteps[tutorialStep].position === 'bottom-left' ? 'absolute bottom-20 left-4' : 
               tutorialSteps[tutorialStep].position === 'top-center' ? 'absolute top-20 left-1/2 transform -translate-x-1/2' :
-              'relative'
-            }`}
+              'relative'}
             style={{
               backgroundImage: 'url("/tutorialui.png")',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
+              backgroundRepeat: 'no-repeat',
+              width: '672px',
+              height: '500px',
+              border: '0 !important',
+              outline: '0 !important',
+              boxShadow: 'none !important',
+              margin: '0',
+              padding: '0',
+              position: tutorialSteps[tutorialStep].position === 'top-left' ? 'absolute' : 
+                tutorialSteps[tutorialStep].position === 'bottom-left' ? 'absolute' : 
+                tutorialSteps[tutorialStep].position === 'top-center' ? 'absolute' : 'relative',
+              top: tutorialSteps[tutorialStep].position === 'top-left' ? '80px' : 
+                tutorialSteps[tutorialStep].position === 'top-center' ? '80px' : 'auto',
+              bottom: tutorialSteps[tutorialStep].position === 'bottom-left' ? '80px' : 'auto',
+              left: tutorialSteps[tutorialStep].position === 'top-left' || tutorialSteps[tutorialStep].position === 'bottom-left' ? '16px' : 
+                tutorialSteps[tutorialStep].position === 'top-center' ? '50%' : 'auto',
+              transform: tutorialSteps[tutorialStep].position === 'top-center' ? 'translateX(-50%)' : 'none',
+              boxSizing: 'border-box',
+              borderRadius: '0 !important',
+              WebkitBoxShadow: 'none !important',
+              MozBoxShadow: 'none !important'
             }}
           >
-            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg"></div>
             <div className="p-8 relative z-10">
               <div className="text-center mb-6">
                 <div className="text-lg font-bold text-blue-400 mb-2">
@@ -2318,7 +2135,7 @@ const AutoBattleRPG = () => {
       )}
 
       {gameOver && (
-        <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-8 rounded-lg text-center">
             <h2 className="text-4xl font-bold text-red-500 mb-4">GAME OVER</h2>
             <div className="text-xl mb-2">Level Reached: {gameState.character.level}</div>
@@ -2335,7 +2152,7 @@ const AutoBattleRPG = () => {
       )}
 
       {gameState.isLevelingUp && (
-        <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-8 rounded-lg max-w-md w-full mx-4">
             <div className="text-center mb-6">
               <Star className="w-16 h-16 text-yellow-400 mx-auto mb-2" />
