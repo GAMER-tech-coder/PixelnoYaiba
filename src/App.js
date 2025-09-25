@@ -1468,31 +1468,34 @@ const AutoBattleRPG = () => {
 
   const tutorialStepStyle = {
     color: '#4A90E2',
-    fontSize: '14px', // Increased from 10px
+    fontSize: '14px',
     fontWeight: 'bold',
-    marginBottom: '8px', // Slightly increased from 6px
-    textShadow: '1px 1px 2px white'
+    marginBottom: '8px',
+    textShadow: '1px 1px 2px white',
+    marginLeft: '20px' // Shift slightly to the right
   };
 
   const tutorialHeadingStyle = {
     color: '#CC0000',
-    fontSize: '22px', // Reduced from 28px
+    fontSize: '22px',
     fontWeight: 'bold',
-    marginBottom: '12px', // Reduced from 15px
+    marginBottom: '12px',
     textAlign: 'center',
     WebkitTextStroke: '0.5px black',
-    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+    textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+    marginLeft: '20px' // Shift slightly to the right
   };
 
   const tutorialContentStyle = {
     color: 'black',
-    fontSize: '11px', // Reduced from 13px
+    fontSize: '11px',
     fontWeight: '500',
     textAlign: 'center',
-    lineHeight: '1.3', // Reduced from 1.4
-    marginBottom: '15px', // Reduced from 20px
+    lineHeight: '1.3',
+    marginBottom: '15px',
     textShadow: '1px 1px 2px rgba(255,255,255,0.8)',
-    maxWidth: '350px' // Reduced from 450px
+    maxWidth: '350px',
+    marginLeft: '20px' // Shift slightly to the right
   };
 
   const tutorialButtonContainerStyle = {
