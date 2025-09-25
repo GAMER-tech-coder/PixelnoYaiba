@@ -2168,11 +2168,20 @@ const AutoBattleRPG = () => {
           >
             <div className="p-8 relative z-10">
               <div className="text-center mb-6">
-                <div className="text-lg font-bold text-blue-400 mb-2">
+                <div className="text-lg font-bold text-blue-600 mb-2" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8)' }}>
                   Step {tutorialStep + 1} of {tutorialSteps.length}
                 </div>
-                <h2 className="text-2xl font-bold text-yellow-400 mb-3">{tutorialSteps[tutorialStep].title}</h2>
-                <p className="text-gray-300 text-base leading-relaxed">{tutorialSteps[tutorialStep].content}</p>
+                <h2 className="text-2xl font-bold text-red-600 mb-3" style={{ 
+                  WebkitTextStroke: '1px black',
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                }}>
+                  {tutorialSteps[tutorialStep].title}
+                </h2>
+                <p className="text-black text-base leading-relaxed font-medium" style={{ 
+                  textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8)'
+                }}>
+                  {tutorialSteps[tutorialStep].content}
+                </p>
               </div>
               
               <div className="flex justify-between items-center">
