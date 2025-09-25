@@ -998,6 +998,17 @@ const AutoBattleRPG = () => {
               color: 'text-red-500'
             });
             
+            // Add slash effect on enemy
+            const slashRotation = Math.random() * 360; // Random rotation
+            addEffect({
+              type: 'slash',
+              x: enemy.x,
+              y: enemy.y,
+              text: '⚔️',
+              color: 'text-white',
+              rotation: slashRotation
+            });
+            
             if (newHealth <= 0) {
               newState.enemiesKilled++;
               newState.character.xp += enemy.xp;
@@ -1039,6 +1050,17 @@ const AutoBattleRPG = () => {
               y: boss.y,
               text: `-${actualDamage}`,
               color: 'text-red-500'
+            });
+            
+            // Add slash effect on boss
+            const slashRotation = Math.random() * 360; // Random rotation
+            addEffect({
+              type: 'slash',
+              x: boss.x,
+              y: boss.y,
+              text: '⚔️',
+              color: 'text-white',
+              rotation: slashRotation
             });
             
             if (newHealth <= 0) {
@@ -1760,61 +1782,6 @@ const AutoBattleRPG = () => {
               height: `${gameState.character.attackRange * 2}px` 
             }}
           ></div>
-          
-          {/* Sword Slash Animation */}
-          {gameState.character.isAttacking && (
-            <>
-              {/* Multiple white slash marks */}
-              <div 
-                className="absolute w-28 h-28 pointer-events-none z-20"
-                style={{
-                  left: '-16px',
-                  top: '-16px',
-                }}
-              >
-                {/* First slash */}
-                <div 
-                  className="absolute w-16 h-1 bg-white opacity-90"
-                  style={{
-                    left: '50%',
-                    top: '30%',
-                    transform: 'translate(-50%, -50%) rotate(45deg)',
-                    borderRadius: '2px',
-                    boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
-                    animation: 'slash1 200ms ease-out forwards'
-                  }}
-                ></div>
-                
-                {/* Second slash */}
-                <div 
-                  className="absolute w-14 h-1 bg-white opacity-80"
-                  style={{
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%) rotate(-30deg)',
-                    borderRadius: '2px',
-                    boxShadow: '0 0 6px rgba(255, 255, 255, 0.7)',
-                    animation: 'slash2 200ms ease-out forwards',
-                    animationDelay: '50ms'
-                  }}
-                ></div>
-                
-                {/* Third slash */}
-                <div 
-                  className="absolute w-12 h-1 bg-white opacity-70"
-                  style={{
-                    left: '50%',
-                    top: '70%',
-                    transform: 'translate(-50%, -50%) rotate(15deg)',
-                    borderRadius: '2px',
-                    boxShadow: '0 0 4px rgba(255, 255, 255, 0.6)',
-                    animation: 'slash3 200ms ease-out forwards',
-                    animationDelay: '100ms'
-                  }}
-                ></div>
-              </div>
-            </>
-          )}
         </div>
 
         {gameState.bossProjectiles.map(projectile => {
@@ -1973,6 +1940,30 @@ const AutoBattleRPG = () => {
           const fadeProgress = age / 1500;
           const scale = 1 + (fadeProgress * 0.3);
           const opacity = Math.max(0, 1 - fadeProgress);
+          
+          // Special rendering for slash effects
+          if (effect.type === 'slash') {
+            return (
+              <div
+                key={effect.id}
+                className="absolute pointer-events-none z-25"
+                style={{ 
+                  left: `${effect.x - 20}px`, 
+                  top: `${effect.y - 2}px`,
+                  opacity: Math.max(0, 1 - (age / 300)), // Faster fade for slashes
+                  transform: `rotate(${effect.rotation}deg) scale(${1 + (age / 300)})`,
+                }}
+              >
+                <div 
+                  className="w-10 h-0.5 bg-white"
+                  style={{
+                    boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
+                    borderRadius: '2px'
+                  }}
+                ></div>
+              </div>
+            );
+          }
           
           return (
             <div
