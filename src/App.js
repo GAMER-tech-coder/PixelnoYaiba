@@ -16,7 +16,8 @@ const AutoBattleRPG = () => {
       x: 400,
       y: 300,
       speed: 5,
-      attackRange: 120
+      attackRange: 120,
+      isAttacking: false
     },
     enemies: [],
     bosses: [],
@@ -47,6 +48,7 @@ const AutoBattleRPG = () => {
   const [gameOver, setGameOver] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [screenShake, setScreenShake] = useState(false);
 
   const tutorialSteps = [
     {
@@ -858,12 +860,12 @@ const AutoBattleRPG = () => {
       const boss = {
         id: Date.now() + Math.random(),
         ...bossType,
-        currentHealth: bossType.health + (scaleFactor * 100),
-        maxHealth: bossType.health + (scaleFactor * 100),
+        currentHealth: bossType.health + (scaleFactor * 75),
+        maxHealth: bossType.health + (scaleFactor * 75),
         x: 400 + (Math.random() - 0.5) * 200,
         y: 200 + (Math.random() - 0.5) * 200,
-        xp: bossType.xp + (scaleFactor * 30),
-        damage: bossType.damage + (scaleFactor * 5),
+        xp: bossType.xp + (scaleFactor * 50),
+        damage: bossType.damage + (scaleFactor * 3),
         lastDamageTime: 0,
         lastAttackTime: 0,
         lastSpecialAttack: 0,
@@ -912,13 +914,13 @@ const AutoBattleRPG = () => {
           id: Date.now() + Math.random() + i,
           ...enemyType,
           name: isElite ? `Elite ${enemyType.name}` : enemyType.name,
-          currentHealth: (enemyType.health + (scaleFactor * 25)) * (isElite ? 1.5 : 1),
-          maxHealth: (enemyType.health + (scaleFactor * 25)) * (isElite ? 1.5 : 1),
-          damage: (enemyType.damage + (scaleFactor * 3)) * (isElite ? 1.3 : 1),
+          currentHealth: (enemyType.health + (scaleFactor * 15)) * (isElite ? 1.5 : 1),
+          maxHealth: (enemyType.health + (scaleFactor * 15)) * (isElite ? 1.5 : 1),
+          damage: (enemyType.damage + (scaleFactor * 2)) * (isElite ? 1.3 : 1),
           speed: enemyType.speed * (isElite ? 1.2 : 1),
           x: centerX + Math.cos(angle) * distance,
           y: centerY + Math.sin(angle) * distance,
-          xp: (enemyType.xp + (scaleFactor * 8)) * (isElite ? 1.5 : 1),
+          xp: (enemyType.xp + (scaleFactor * 12)) * (isElite ? 1.5 : 1),
           lastDamageTime: 0,
           isElite: isElite,
           color: isElite ? 'bg-orange-600' : enemyType.color
@@ -1061,6 +1063,15 @@ const AutoBattleRPG = () => {
         }
 
         newState.character.lastAttack = now;
+        newState.character.isAttacking = true;
+        
+        // Reset attack animation after 200ms
+        setTimeout(() => {
+          setGameState(prev => ({
+            ...prev,
+            character: { ...prev.character, isAttacking: false }
+          }));
+        }, 200);
 
         if (newState.enemies.length === 0 && newState.bosses.length === 0 && newState.waveProgress === 'active') {
           newState.waveProgress = 'cleared';
@@ -1105,8 +1116,17 @@ const AutoBattleRPG = () => {
             type: 'rocket',
             x: target.x,
             y: target.y,
-            text: '🚀',
+            text: '💥',
             color: 'text-orange-500'
+          });
+          
+          // Add explosion effect
+          addEffect({
+            type: 'explosion',
+            x: target.x + (Math.random() - 0.5) * 20,
+            y: target.y + (Math.random() - 0.5) * 20,
+            text: '🔥',
+            color: 'text-red-500'
           });
           
           let actualDamage = rocketDamage;
@@ -1199,6 +1219,15 @@ const AutoBattleRPG = () => {
             y: target.y,
             text: '⚡',
             color: 'text-blue-400'
+          });
+          
+          // Add thunder warning effect
+          addEffect({
+            type: 'thunder_warning',
+            x: target.x,
+            y: target.y - 30,
+            text: '🌩️',
+            color: 'text-yellow-300'
           });
           
           let actualDamage = thunderDamage;
@@ -1446,6 +1475,10 @@ const AutoBattleRPG = () => {
                 color: 'text-red-600'
               });
               
+              // Screen shake on damage
+              setScreenShake(true);
+              setTimeout(() => setScreenShake(false), 150);
+              
               if (newState.character.health <= 0) {
                 newState.character.health = 0;
                 setGameOver(true);
@@ -1474,6 +1507,10 @@ const AutoBattleRPG = () => {
                 color: 'text-red-600'
               });
               
+              // Screen shake on damage
+              setScreenShake(true);
+              setTimeout(() => setScreenShake(false), 150);
+              
               if (newState.character.health <= 0) {
                 newState.character.health = 0;
                 setGameOver(true);
@@ -1497,6 +1534,10 @@ const AutoBattleRPG = () => {
                 text: `-${boss.damage}`,
                 color: 'text-red-600'
               });
+              
+              // Screen shake on damage
+              setScreenShake(true);
+              setTimeout(() => setScreenShake(false), 150);
               
               if (newState.character.health <= 0) {
                 newState.character.health = 0;
@@ -1536,9 +1577,9 @@ const AutoBattleRPG = () => {
           newState.character.level++;
           newState.character.xpToNext = Math.floor(newState.character.xpToNext * 1.4);
           
-          newState.character.maxHealth += 8;
-          newState.character.health += 12;
-          newState.character.damage += 2;
+          newState.character.maxHealth += 15;
+          newState.character.health += 20;
+          newState.character.damage += 3;
           newState.character.attackSpeed = Math.max(300, newState.character.attackSpeed - 30);
           
           if (newState.character.health > newState.character.maxHealth) {
@@ -1693,7 +1734,10 @@ const AutoBattleRPG = () => {
         <div className="absolute w-1 h-1 bg-white rounded-full animate-pulse" style={{left: '90%', top: '40%', animationDelay: '5s'}}></div>
       </div>
       
-      <div className="relative h-screen border-4 border-gray-700">
+      <div className={`relative h-screen border-4 border-gray-700 ${screenShake ? 'animate-pulse' : ''}`} style={{ 
+        transform: screenShake ? 'translate(2px, 1px)' : 'none',
+        transition: 'transform 50ms ease-out'
+      }}>
         <div 
           className={`absolute w-16 h-16 flex items-center justify-center z-10 shadow-lg border-4 border-blue-300 transition-all duration-75 ${
             showTutorial && tutorialSteps[tutorialStep]?.highlight === 'character' ? 'ring-4 ring-yellow-400' : ''
@@ -1702,7 +1746,7 @@ const AutoBattleRPG = () => {
             left: `${gameState.character.x - 32}px`, 
             top: `${gameState.character.y - 32}px`,
             transform: gameState.character.health <= 30 ? 'scale(0.9)' : 'scale(1)',
-            backgroundImage: 'url("/Character_tanjiro.png")',
+            backgroundImage: 'url("/character_tanjiro.png")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
@@ -1715,6 +1759,30 @@ const AutoBattleRPG = () => {
               height: `${gameState.character.attackRange * 2}px` 
             }}
           ></div>
+          
+          {/* Sword Slash Animation */}
+          {gameState.character.isAttacking && (
+            <div 
+              className="absolute w-20 h-20 pointer-events-none z-20 animate-pulse"
+              style={{
+                left: '-10px',
+                top: '-10px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(251, 191, 36, 0.6) 0%, rgba(245, 158, 11, 0.4) 50%, transparent 70%)',
+                transform: 'scale(1.2)',
+                animation: 'slash 200ms ease-out forwards'
+              }}
+            >
+              <div 
+                className="w-full h-full"
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 250deg, rgba(251, 191, 36, 0.8) 280deg, rgba(245, 158, 11, 0.6) 300deg, transparent 330deg)',
+                  borderRadius: '50%',
+                  transform: 'rotate(45deg)'
+                }}
+              ></div>
+            </div>
+          )}
         </div>
 
         {gameState.bossProjectiles.map(projectile => {
@@ -1868,15 +1936,30 @@ const AutoBattleRPG = () => {
           </div>
         ))}
 
-        {gameState.effects.map(effect => (
-          <div
-            key={effect.id}
-            className={`absolute ${effect.color} font-bold text-lg animate-bounce pointer-events-none z-20`}
-            style={{ left: `${effect.x}px`, top: `${effect.y}px` }}
-          >
-            {effect.text}
-          </div>
-        ))}
+        {gameState.effects.map(effect => {
+          const age = gameState.gameTime - effect.time;
+          const fadeProgress = age / 1500;
+          const scale = 1 + (fadeProgress * 0.3);
+          const opacity = Math.max(0, 1 - fadeProgress);
+          
+          return (
+            <div
+              key={effect.id}
+              className={`absolute ${effect.color} font-bold pointer-events-none z-20`}
+              style={{ 
+                left: `${effect.x}px`, 
+                top: `${effect.y - (age * 0.05)}px`,
+                transform: `scale(${scale})`,
+                opacity: opacity,
+                fontSize: effect.type === 'kill' ? '16px' : '18px',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                transition: 'all 0.1s ease-out'
+              }}
+            >
+              {effect.text}
+            </div>
+          );
+        })}
 
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
           {gameState.waveProgress === 'cleared' && (
@@ -2150,4 +2233,3 @@ const AutoBattleRPG = () => {
 };
 
 export default AutoBattleRPG;
-
