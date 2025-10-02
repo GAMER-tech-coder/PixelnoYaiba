@@ -1322,7 +1322,7 @@ const AutoBattleRPG = () => {
 
       attackEnemies();
       executeAbilities();
-      executeBossAbilities();
+      executeBossAbilities(); // This must be called!
     }, 50);
 
     return () => clearInterval(gameLoop);
