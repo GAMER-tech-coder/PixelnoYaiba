@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Zap, Target, Flame, Rocket, Sword, Shield, Heart, Star } from 'lucide-react';
-import './App.css';
+import './App.css':
 
 const AutoBattleRPG = () => {
+  console.log('🎮 Game component rendered!');
+  
   const [gameState, setGameState] = useState({
     currency: 0,
     selectedCharacter: 'tanjiro',
